@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils"
 const DAYS = 10
 
 export default function RackPage() {
-  const { state, view, setHotel, assignRoom, setReservationStatus } = useStore()
+  const { state, view, setHotel, assignRoom, setReservationStatus, checkIn, checkOut } = useStore()
   const hotelId = view.hotelId
   const [start] = useState(addDays(TODAY, -1))
   const days = dateRange(start, DAYS)
@@ -59,7 +59,7 @@ export default function RackPage() {
     <div>
       <PageHeader
         title="Blokaj / oda rack"
-        description="Elektraweb’in blokaj ekranı: oda × tarih ızgarası, sürükle-bırak yerine tıklayarak oda atama, check-in ve yeni kayıt."
+        description="Ön büro rack: oda atama, check-in / check-out. Kirli veya arızalı odaya giriş yapılmaz; çıkış odayı kat hizmetine düşürür."
         actions={
           <div className="flex flex-wrap gap-2">
             <select
@@ -246,9 +246,12 @@ export default function RackPage() {
                 {selected.status === "Konfirmeli" || selected.status === "Opsiyon" ? (
                   <Button
                     onClick={() => {
-                      setReservationStatus(selected.id, "Check-in")
-                      toast.success("Check-in yapıldı")
-                      setSelected(null)
+                      const result = checkIn(selected.id)
+                      if (!result.ok) toast.error(result.reason)
+                      else {
+                        toast.success("Check-in yapıldı")
+                        setSelected(null)
+                      }
                     }}
                   >
                     Check-in
@@ -257,9 +260,12 @@ export default function RackPage() {
                 {selected.status === "Check-in" ? (
                   <Button
                     onClick={() => {
-                      setReservationStatus(selected.id, "Check-out")
-                      toast.success("Check-out yapıldı")
-                      setSelected(null)
+                      const result = checkOut(selected.id)
+                      if (!result.ok) toast.error(result.reason)
+                      else {
+                        toast.success("Check-out · oda kirliye alındı")
+                        setSelected(null)
+                      }
                     }}
                   >
                     Check-out

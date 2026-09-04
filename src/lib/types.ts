@@ -1,12 +1,13 @@
 export type Board = "UAI" | "AI" | "HB" | "BB" | "RO"
 export type ContractType = "Garanti" | "Allotment" | "Serbest satış"
 export type PmsKind =
+  | "ETS Kontrol"
   | "Elektraweb"
   | "Opera Cloud"
   | "Sedna"
   | "HotelRunner"
-  | "Manuel"
-export type Integration = "Çift yönlü" | "Polling" | "Manuel"
+  | "Yok"
+export type Integration = "Çift yönlü" | "Polling" | "Manuel" | "Yerel PMS"
 export type HotelKind = "Grup tesisi" | "Kontratlı"
 export type ReservationStatus =
   | "Opsiyon"
@@ -21,6 +22,11 @@ export type Channel =
   | "Odamax"
   | "Çağrı merkezi"
   | "Acente B2B"
+  | "Walk-in"
+export type HousekeepingStatus = "Temiz" | "Kirli" | "Kontrol" | "Arızalı"
+export type HkTaskType = "Çıkış temizliği" | "Stayover" | "VIP setup" | "Arıza"
+export type HkTaskStatus = "Açık" | "Devam" | "Tamam"
+export type FolioDepartment = "Oda" | "Minibar" | "Çamaşır" | "Restoran" | "Diğer"
 
 export type Hotel = {
   id: string
@@ -32,6 +38,7 @@ export type Hotel = {
   concept: Board
   kind: HotelKind
   pms: PmsKind
+  usesEtsPms: boolean
   contractType: ContractType
   integration: Integration
   status: "Aktif" | "Stop sale" | "Askıda"
@@ -53,6 +60,9 @@ export type Room = {
   roomTypeId: string
   number: string
   floor: number
+  hkStatus: HousekeepingStatus
+  hkAssignee: string | null
+  hkNote?: string
 }
 
 export type Reservation = {
@@ -94,6 +104,24 @@ export type RatePlan = {
   currency: "EUR"
 }
 
+export type HkTask = {
+  id: string
+  hotelId: string
+  roomId: string
+  type: HkTaskType
+  status: HkTaskStatus
+  assignee: string
+  due: string
+}
+
+export type FolioItem = {
+  id: string
+  reservationId: string
+  department: FolioDepartment
+  description: string
+  amount: number
+}
+
 export type AppState = {
   hotels: Hotel[]
   roomTypes: RoomType[]
@@ -101,6 +129,8 @@ export type AppState = {
   reservations: Reservation[]
   allotments: AllotmentCell[]
   rates: RatePlan[]
+  hkTasks: HkTask[]
+  folio: FolioItem[]
 }
 
 export type Role = "merkez" | "otel"
@@ -108,3 +138,5 @@ export type ViewState = {
   role: Role
   hotelId: string
 }
+
+export type ActionResult = { ok: true } | { ok: false; reason: string }

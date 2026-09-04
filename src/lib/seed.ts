@@ -4,7 +4,9 @@ import type {
   AppState,
   Board,
   Channel,
+  FolioItem,
   Hotel,
+  HkTask,
   RatePlan,
   Reservation,
   ReservationStatus,
@@ -23,6 +25,7 @@ const HOTELS: Hotel[] = [
     concept: "UAI",
     kind: "Grup tesisi",
     pms: "Opera Cloud",
+    usesEtsPms: false,
     contractType: "Garanti",
     integration: "Çift yönlü",
     status: "Aktif",
@@ -37,6 +40,7 @@ const HOTELS: Hotel[] = [
     concept: "UAI",
     kind: "Grup tesisi",
     pms: "Elektraweb",
+    usesEtsPms: false,
     contractType: "Garanti",
     integration: "Çift yönlü",
     status: "Aktif",
@@ -51,6 +55,7 @@ const HOTELS: Hotel[] = [
     concept: "UAI",
     kind: "Grup tesisi",
     pms: "Elektraweb",
+    usesEtsPms: false,
     contractType: "Garanti",
     integration: "Çift yönlü",
     status: "Aktif",
@@ -65,6 +70,7 @@ const HOTELS: Hotel[] = [
     concept: "AI",
     kind: "Kontratlı",
     pms: "Elektraweb",
+    usesEtsPms: false,
     contractType: "Allotment",
     integration: "Polling",
     status: "Aktif",
@@ -79,6 +85,7 @@ const HOTELS: Hotel[] = [
     concept: "AI",
     kind: "Kontratlı",
     pms: "Sedna",
+    usesEtsPms: false,
     contractType: "Allotment",
     integration: "Çift yönlü",
     status: "Aktif",
@@ -93,6 +100,7 @@ const HOTELS: Hotel[] = [
     concept: "UAI",
     kind: "Kontratlı",
     pms: "Elektraweb",
+    usesEtsPms: false,
     contractType: "Allotment",
     integration: "Polling",
     status: "Stop sale",
@@ -106,9 +114,10 @@ const HOTELS: Hotel[] = [
     roomCount: 194,
     concept: "AI",
     kind: "Kontratlı",
-    pms: "HotelRunner",
+    pms: "ETS Kontrol",
+    usesEtsPms: true,
     contractType: "Serbest satış",
-    integration: "Çift yönlü",
+    integration: "Yerel PMS",
     status: "Aktif",
   },
   {
@@ -121,6 +130,7 @@ const HOTELS: Hotel[] = [
     concept: "HB",
     kind: "Kontratlı",
     pms: "Opera Cloud",
+    usesEtsPms: false,
     contractType: "Allotment",
     integration: "Çift yönlü",
     status: "Aktif",
@@ -134,9 +144,10 @@ const HOTELS: Hotel[] = [
     roomCount: 156,
     concept: "AI",
     kind: "Kontratlı",
-    pms: "Elektraweb",
+    pms: "ETS Kontrol",
+    usesEtsPms: true,
     contractType: "Allotment",
-    integration: "Manuel",
+    integration: "Yerel PMS",
     status: "Aktif",
   },
   {
@@ -148,9 +159,10 @@ const HOTELS: Hotel[] = [
     roomCount: 132,
     concept: "BB",
     kind: "Kontratlı",
-    pms: "HotelRunner",
+    pms: "ETS Kontrol",
+    usesEtsPms: true,
     contractType: "Serbest satış",
-    integration: "Çift yönlü",
+    integration: "Yerel PMS",
     status: "Aktif",
   },
   {
@@ -162,10 +174,11 @@ const HOTELS: Hotel[] = [
     roomCount: 78,
     concept: "BB",
     kind: "Kontratlı",
-    pms: "Manuel",
+    pms: "ETS Kontrol",
+    usesEtsPms: true,
     contractType: "Serbest satış",
-    integration: "Manuel",
-    status: "Askıda",
+    integration: "Yerel PMS",
+    status: "Aktif",
   },
   {
     id: "capadoccia-cave",
@@ -176,9 +189,40 @@ const HOTELS: Hotel[] = [
     roomCount: 42,
     concept: "BB",
     kind: "Kontratlı",
-    pms: "HotelRunner",
+    pms: "ETS Kontrol",
+    usesEtsPms: true,
     contractType: "Allotment",
-    integration: "Polling",
+    integration: "Yerel PMS",
+    status: "Aktif",
+  },
+  {
+    id: "kas-mavi",
+    name: "Kaş Mavi Butik",
+    city: "Kaş",
+    region: "Antalya",
+    stars: 3,
+    roomCount: 28,
+    concept: "BB",
+    kind: "Kontratlı",
+    pms: "ETS Kontrol",
+    usesEtsPms: true,
+    contractType: "Serbest satış",
+    integration: "Yerel PMS",
+    status: "Aktif",
+  },
+  {
+    id: "pamukkale-thermal",
+    name: "Pamukkale Thermal",
+    city: "Pamukkale",
+    region: "Denizli",
+    stars: 4,
+    roomCount: 96,
+    concept: "HB",
+    kind: "Kontratlı",
+    pms: "ETS Kontrol",
+    usesEtsPms: true,
+    contractType: "Allotment",
+    integration: "Yerel PMS",
     status: "Aktif",
   },
 ]
@@ -219,7 +263,10 @@ const CHANNELS: Channel[] = [
   "Odamax",
   "Çağrı merkezi",
   "Acente B2B",
+  "Walk-in",
 ]
+
+const HOUSEKEEPERS = ["Fatma Yıldız", "Emine Korkmaz", "Ayşe Çelik", "Hatice Demir"]
 
 function contractShare(hotel: Hotel) {
   if (hotel.kind === "Grup tesisi") return 0.22
@@ -270,6 +317,8 @@ function buildRooms(roomTypes: RoomType[]): Room[] {
         roomTypeId: type.id,
         number,
         floor,
+        hkStatus: "Temiz",
+        hkAssignee: pick(HOUSEKEEPERS, i + typeIndex),
       })
     }
   }
@@ -389,12 +438,82 @@ function buildAllotments(roomTypes: RoomType[]): AllotmentCell[] {
 export function createSeedState(): AppState {
   const roomTypes = buildRoomTypes()
   const rooms = buildRooms(roomTypes)
+  const reservations = buildReservations(roomTypes, rooms)
+  const occupiedIds = new Set(
+    reservations
+      .filter((item) => item.status === "Check-in" && item.roomId)
+      .map((item) => item.roomId as string)
+  )
+  const departedIds = new Set(
+    reservations
+      .filter((item) => item.status === "Check-out" && item.roomId)
+      .map((item) => item.roomId as string)
+  )
+  const roomsWithHk = rooms.map((room, index) => {
+    if (index % 17 === 0) {
+      return { ...room, hkStatus: "Arızalı" as const, hkNote: "Klima arızası" }
+    }
+    if (departedIds.has(room.id) || index % 5 === 0) {
+      return { ...room, hkStatus: "Kirli" as const }
+    }
+    if (occupiedIds.has(room.id) && index % 7 === 0) {
+      return { ...room, hkStatus: "Kirli" as const, hkNote: "Stayover" }
+    }
+    if (index % 11 === 0) {
+      return { ...room, hkStatus: "Kontrol" as const }
+    }
+    return room
+  })
+  const hkTasks: HkTask[] = roomsWithHk
+    .filter((room) => room.hkStatus === "Kirli" || room.hkStatus === "Arızalı")
+    .map((room, index) => ({
+      id: `hk-${room.id}`,
+      hotelId: room.hotelId,
+      roomId: room.id,
+      type:
+        room.hkStatus === "Arızalı"
+          ? "Arıza"
+          : departedIds.has(room.id)
+            ? "Çıkış temizliği"
+            : "Stayover",
+      status: index % 4 === 0 ? "Devam" : "Açık",
+      assignee: room.hkAssignee ?? pick(HOUSEKEEPERS, index),
+      due: TODAY,
+    }))
+  const folio: FolioItem[] = reservations
+    .filter((item) => item.status === "Check-in")
+    .flatMap((item, index) => {
+      const extras =
+        index % 2 === 0
+          ? [
+              {
+                id: `f-${item.id}-1`,
+                reservationId: item.id,
+                department: "Minibar" as const,
+                description: "Minibar",
+                amount: 18,
+              },
+            ]
+          : []
+      return [
+        {
+          id: `f-${item.id}-oda`,
+          reservationId: item.id,
+          department: "Oda" as const,
+          description: "Konaklama",
+          amount: item.amount,
+        },
+        ...extras,
+      ]
+    })
   return {
     hotels: HOTELS,
     roomTypes,
-    rooms,
-    reservations: buildReservations(roomTypes, rooms),
+    rooms: roomsWithHk,
+    reservations,
     allotments: buildAllotments(roomTypes),
     rates: buildRates(roomTypes),
+    hkTasks,
+    folio,
   }
 }

@@ -11,7 +11,9 @@ import {
   Map,
   Menu,
   RotateCcw,
+  Sparkles,
   Ticket,
+  Users,
   Wallet,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -30,11 +32,13 @@ import { cn } from "@/lib/utils"
 
 const NAV = [
   { href: "/panel", label: "Günlük durum", icon: LayoutDashboard },
-  { href: "/panel/oteller", label: "Tesisler", icon: Building2 },
   { href: "/panel/blokaj", label: "Blokaj", icon: BedDouble },
   { href: "/panel/rezervasyonlar", label: "Rezervasyonlar", icon: Ticket },
+  { href: "/panel/kat-hizmetleri", label: "Kat hizmetleri", icon: Sparkles },
+  { href: "/panel/konaklayanlar", label: "Konaklayanlar", icon: Users },
   { href: "/panel/kontenjan", label: "Kontenjan", icon: CalendarRange },
-  { href: "/panel/fiyatlar", label: "Kontrat fiyatları", icon: Wallet },
+  { href: "/panel/fiyatlar", label: "Fiyatlar", icon: Wallet },
+  { href: "/panel/oteller", label: "Tesisler", icon: Building2 },
 ]
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -122,7 +126,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           Etsgroup
         </p>
         <p className="font-heading text-lg font-semibold text-white">ETS Kontrol</p>
-        <p className="text-xs text-white/55">Kontratlı tesis yönetim sistemi</p>
+        <p className="text-xs text-white/55">5 yıldız ve altı otel PMS’i</p>
       </Link>
       <RoleSwitch />
       <NavLinks onNavigate={onNavigate} />

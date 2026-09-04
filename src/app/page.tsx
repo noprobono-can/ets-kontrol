@@ -4,16 +4,16 @@ import { cn } from "@/lib/utils"
 
 const GAPS = [
   {
-    title: "Elektraweb ne?",
-    body: "Otellerin kendi ön bürosunu, kat hizmetlerini, POS’unu ve kanal yöneticisini çalıştırdığı bulut PMS. 5.000+ tesis, 30+ yıl, 160 kişilik destek. Angular + Node.",
+    title: "Kime?",
+    body: "Elektraweb / Opera alamayan 3, 4 ve 5 yıldız oteller. Excel ve defterle dönen tesisler. ETS’nin kontratlı partnerleri öncelikli.",
   },
   {
-    title: "ETS bugün ne?",
-    body: "Satış tarafı: etstur.com, Odamax, Etscore / Royal API. Oteller Elektraweb’den rezervasyonu polling ile çeker. Merkezin tek ekrandan kontenjan, stop sale ve kontrat kontrolü yok.",
+    title: "Ne?",
+    body: "Otelin kendi PMS’i: rezervasyon, blokaj, check-in/out, kat hizmeti, folyo. ETS merkez aynı veriyi görür.",
   },
   {
-    title: "Doğru ürün",
-    body: "Elektraweb’i kopyalamak değil; onun blokaj / kontrat / günlük durum dilimini tur operatörü ölçeğinde yeniden kurmak. Oteller PMS’lerini korur, ETS stoku yönetir.",
+    title: "Neden ETS?",
+    body: "Yazılım ücretsiz/ucuz verilir, stok etstur.com ve Etscore’a akar. Otel operasyonu kazanınca ETS de satışını kontrol eder.",
   },
 ]
 
@@ -42,31 +42,32 @@ export default function HomePage() {
 
       <main className="mx-auto max-w-6xl px-5 pb-20 pt-10">
         <p className="text-sm font-medium tracking-wide text-teal-200/90">
-          İlk çalışan dilim · Eylül 2026
+          Otel PMS’i · ilk dilim
         </p>
         <h1 className="font-heading mt-4 max-w-3xl text-4xl leading-tight sm:text-6xl">
-          ETS Tur için Elektraweb tarzında tesis kontrolü.
+          İmkânı olmayan otele, Elektraweb kadar sistem.
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-white/70">
-          Elektraweb otelin kendi yazılımıdır. ETS’nin ihtiyacı, çalıştığı yüzlerce
-          tesisi tek merkezden görmek: kontenjan, stop sale, kontrat fiyatı,
-          rezervasyon ve blokaj. Bu repo o ürünün kullanılabilir ilk kesitidir.
+          ETS Tur, 5 yıldız ve altı tesislere kendi bünyesinde bir otel yönetim
+          sistemi verir. Rezervasyondan kat hizmetine, folyodan kontenjana kadar
+          günlük operasyon bu panelde yürür. Opera ve Elektraweb’i kopyalamıyoruz;
+          onların ulaşamadığı otele gidiyoruz.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/panel"
             className={cn(buttonVariants({ size: "lg" }), "bg-white text-slate-900 hover:bg-white/90")}
           >
-            Demo paneli aç
+            Otel panelini aç
           </Link>
           <Link
-            href="/yol-haritasi"
+            href="/panel/kat-hizmetleri"
             className={cn(
               buttonVariants({ size: "lg", variant: "outline" }),
               "border-white/20 bg-transparent text-white hover:bg-white/10"
             )}
           >
-            Nasıl inşa edilir
+            Kat hizmetleri
           </Link>
         </div>
 
@@ -83,28 +84,25 @@ export default function HomePage() {
         </div>
 
         <section className="mt-16 rounded-2xl bg-[#f4f1ea] p-6 text-slate-900 sm:p-10">
-          <h2 className="font-heading text-3xl">Bu dilimde neler çalışır</h2>
+          <h2 className="font-heading text-3xl">Bu dilimde otel ne yapar</h2>
           <ul className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <li className="rounded-xl bg-white p-4 ring-1 ring-foreground/10">
-              <strong>Günlük durum.</strong> 12 tesis, kontenjan doluluk, stop sale,
-              bugünkü girişler.
+              <strong>Blokaj.</strong> Oda rack, check-in. Kirli odaya giriş yok.
             </li>
             <li className="rounded-xl bg-white p-4 ring-1 ring-foreground/10">
-              <strong>Blokaj.</strong> Oda × tarih ızgarası, oda atama, check-in /
-              check-out.
+              <strong>Kat hizmetleri.</strong> Temiz / kirli / kontrol / arıza, görevli atama.
             </li>
             <li className="rounded-xl bg-white p-4 ring-1 ring-foreground/10">
-              <strong>Kontenjan.</strong> Allotment hücresi, stop sale aç/kapa.
+              <strong>Konaklayanlar.</strong> Folyo, minibar posting, check-out odayı kirliye alır.
             </li>
             <li className="rounded-xl bg-white p-4 ring-1 ring-foreground/10">
-              <strong>Kontrat fiyatı.</strong> Sezonluk dbl fiyatı yerinde düzenleme.
+              <strong>Rezervasyon.</strong> Walk-in, etstur.com, Etscore, çağrı merkezi.
             </li>
             <li className="rounded-xl bg-white p-4 ring-1 ring-foreground/10">
-              <strong>İki rol.</strong> ETS merkez ve otel kullanıcısı görünümü.
+              <strong>Kontenjan ve fiyat.</strong> ETS satış kanallarına açılan stok.
             </li>
             <li className="rounded-xl bg-white p-4 ring-1 ring-foreground/10">
-              <strong>Yol haritası.</strong> PMS kopyalamadan üretime giden fazlar,
-              entegrasyon ve riskler.
+              <strong>İki rol.</strong> Otel resepsiyonu ve ETS merkez aynı veriyi görür.
             </li>
           </ul>
         </section>

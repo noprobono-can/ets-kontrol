@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import type { Hotel, Integration, ReservationStatus } from "@/lib/types"
+import type { Hotel, HousekeepingStatus, Integration, ReservationStatus } from "@/lib/types"
 
 export function StatusBadge({ status }: { status: Hotel["status"] }) {
   if (status === "Aktif") {
@@ -12,13 +12,23 @@ export function StatusBadge({ status }: { status: Hotel["status"] }) {
 }
 
 export function IntegrationBadge({ value }: { value: Integration }) {
-  if (value === "Çift yönlü") {
+  if (value === "Çift yönlü" || value === "Yerel PMS") {
     return <Badge className="bg-teal-700/15 text-teal-800">{value}</Badge>
   }
   if (value === "Polling") {
     return <Badge className="bg-amber-500/15 text-amber-800">{value}</Badge>
   }
   return <Badge variant="destructive">{value}</Badge>
+}
+
+export function HousekeepingBadge({ status }: { status: HousekeepingStatus }) {
+  const map: Record<HousekeepingStatus, string> = {
+    Temiz: "bg-teal-700/15 text-teal-800",
+    Kirli: "bg-amber-500/20 text-amber-900",
+    Kontrol: "bg-sky-600/15 text-sky-800",
+    Arızalı: "bg-destructive/10 text-destructive",
+  }
+  return <Badge className={map[status]}>{status}</Badge>
 }
 
 export function ReservationBadge({ status }: { status: ReservationStatus }) {

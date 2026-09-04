@@ -1,5 +1,5 @@
-import type { AppState, Reservation } from "./types"
-import { staysOn } from "./dates"
+import type { AppState, FolioItem, HkTask, Reservation, Room } from "./types"
+import { staysOn, TODAY } from "./dates"
 
 const HOLDING: Reservation["status"][] = ["Opsiyon", "Konfirmeli", "Check-in"]
 
@@ -32,6 +32,14 @@ export function roomById(state: AppState, id: string | null) {
 
 export function activeReservations(items: Reservation[]) {
   return items.filter((item) => HOLDING.includes(item.status))
+}
+
+export function occupiedRoomIds(state: AppState, hotelId: string, date = TODAY) {
+  return new Set(
+    inHouseOn(state, date, hotelId)
+      .map((item) => item.roomId)
+      .filter((id): id is string => Boolean(id))
+  )
 }
 
 export function soldOn(
@@ -111,10 +119,38 @@ export function stopSaleCount(state: AppState, date: string, hotelId?: string) {
   ).length
 }
 
+export function hkSummary(rooms: Room[]) {
+  return {
+    dirty: rooms.filter((item) => item.hkStatus === "Kirli").length,
+    clean: rooms.filter((item) => item.hkStatus === "Temiz").length,
+    inspect: rooms.filter((item) => item.hkStatus === "Kontrol").length,
+    ooo: rooms.filter((item) => item.hkStatus === "Arızalı").length,
+  }
+}
+
+export function tasksOf(state: AppState, hotelId: string) {
+  return state.hkTasks.filter((item) => item.hotelId === hotelId)
+}
+
+export function folioOf(state: AppState, reservationId: string): FolioItem[] {
+  return state.folio.filter((item) => item.reservationId === reservationId)
+}
+
+export function folioTotal(state: AppState, reservationId: string) {
+  return folioOf(state, reservationId).reduce((acc, item) => acc + item.amount, 0)
+}
+
 export function nextVoucher(state: AppState) {
   const max = state.reservations.reduce((acc, item) => {
     const num = Number(item.voucher.replace("ETS", ""))
     return Number.isFinite(num) ? Math.max(acc, num) : acc
   }, 20000)
   return `ETS${max + 1}`
+}
+
+export function openHkTasks(state: AppState, hotelId?: string): HkTask[] {
+  return state.hkTasks.filter(
+    (item) =>
+      item.status !== "Tamam" && (!hotelId || item.hotelId === hotelId)
+  )
 }

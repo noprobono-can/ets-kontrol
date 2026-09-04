@@ -4,57 +4,40 @@ import { cn } from "@/lib/utils"
 
 const PHASES = [
   {
-    phase: "0",
-    title: "Keşif ve ürün sınırı",
-    items: [
-      "ETS iç ekipler: kontrat, gelir yönetimi, çağrı merkezi, otel ilişkileri, Etscore.",
-      "Mevcut Royal API, rezervasyon çekme (REZTIME / polling) ve PMS eşleme süreçlerini haritalayın.",
-      "Kapsamı kilitleyin: kontenjan + rezervasyon + fiyat. Housekeeping, POS, e-fatura, KBS yok.",
-    ],
-  },
-  {
     phase: "1",
-    title: "Bu dilim — merkez kontrol paneli",
+    title: "Otel PMS çekirdeği — bu dilim",
     items: [
-      "Tesis master data, oda tipleri, kontrat tipi, PMS ve entegrasyon durumu.",
-      "Blokaj, rezervasyon, kontenjan/stop sale, kontrat fiyatı.",
-      "ETS merkez ve otel kullanıcısı rolleri. Demo verisiyle uçtan uca iş akışı.",
+      "Rezervasyon, blokaj, check-in/out.",
+      "Kat hizmeti: temiz / kirli / kontrol / arıza. Çıkış odayı kirliye çeker.",
+      "Konaklayanlar, folyo, ekstra posting.",
+      "Hedef: 3–5 yıldız, PMS’si olmayan veya Excel ile dönen tesis.",
     ],
   },
   {
     phase: "2",
-    title: "Entegrasyon omurgası",
+    title: "Tesis içi operasyon",
     items: [
-      "Webhook öncelikli, polling yedekli rezervasyon alışverişi. Elektraweb EtsTourOperator’ın yerini alın.",
-      "Elektraweb, Opera Cloud, Sedna, HotelRunner için oda tipi / pansiyon / fiyat kodu eşleme.",
-      "Değişiklikleri etstur.com, Odamax ve Etscore stokuna aynı anda yayınlayan stok servisi.",
+      "KBS kimlik bildirimi, e-fatura / e-arşiv, konaklama vergisi.",
+      "Basit restoran / minibar POS (tek satış noktası, Elektraweb POS değil).",
+      "Teknik servis arıza kaydı, oda kapalı (OOO) takvimi.",
     ],
   },
   {
     phase: "3",
-    title: "Kontrat ve gelir",
+    title: "ETS satış omurgası",
     items: [
-      "Garanti oda, allotment, serbest satış, release period, CTA/CTD.",
-      "Sezon, çocuk yaş bandı, erken rezervasyon ve market bazlı fiyat.",
-      "Overbooking kuralı, kanal önceliği, stop sale onayı.",
+      "Kontenjan ve fiyatın etstur.com, Odamax, Etscore’a anlık yayını.",
+      "Webhook; Elektraweb EtsTourOperator polling’inin yerini alır.",
+      "Otel ETS Kontrolden, ETS kanallardan — tek stok.",
     ],
   },
   {
     phase: "4",
-    title: "Operasyon ve uyum",
+    title: "Yayılım",
     items: [
-      "Voucher, değişiklik, iptal, no-show, no-show cezası.",
-      "Otel extranet (kendi kontenjanını güncelleyen tesis) ve onay kuyruğu.",
-      "KVKK, PCI (kart tokene), denetim logu, yetki matrisi.",
-    ],
-  },
-  {
-    phase: "5",
-    title: "Ölçek — PMS değil, platform",
-    items: [
-      "Grup tesisleri (Maxx Royal, Voyage, Caja) için derin PMS entegrasyonu.",
-      "Dinamik fiyat önerisi, rakip tarama — Elektraweb Rate Manager’ın ETS karşılığı.",
-      "Tam otel PMS’i ancak PMS’si olmayan küçük tesislere lite olarak; asla 30 yıllık ürünü baştan yazmayın.",
+      "Pilot: 10 kontratlı 4 yıldız tesis, düşük sezon.",
+      "Eğitim: resepsiyon 1 gün, kat hizmeti 2 saat.",
+      "Maxx Royal / Voyage’a dokunma; onların Opera/Elektraweb’i kalsın.",
     ],
   },
 ]
@@ -73,99 +56,51 @@ export default function RoadmapPage() {
         </div>
       </header>
       <article className="mx-auto max-w-3xl px-5 py-12">
-        <p className="text-sm font-medium text-teal-800">Araştırma notu · Eylül 2026</p>
+        <p className="text-sm font-medium text-teal-800">Ürün kararı · Eylül 2026</p>
         <h1 className="font-heading mt-3 text-4xl leading-tight">
-          Elektraweb kopyalanmaz. ETS için yeniden konumlandırılır.
+          ETS, imkânı olmayan otele PMS verir.
         </h1>
         <p className="mt-4 text-lg text-slate-600">
-          Amaç, ETS Tur’un bünyesinde çalıştığı otelleri kontrol etmek. Bunun için
-          otelin resepsiyon yazılımını yeniden yazmak gerekmez; stok, kontrat ve
-          rezervasyonun tek kaynağı olmak gerekir.
+          Elektraweb 5.000+ tesise satılan tam yığın bir otel programıdır. ETS’nin
+          işi onu yeniden yazmak değil; onu alamayan 5 yıldız ve altı otele
+          rezervasyondan kat hizmetine kadar çalışan bir sistem vermek. Karşılığında
+          operasyon ETS’nin kanallarında görünür kalır.
         </p>
 
-        <h2 className="font-heading mt-12 text-2xl">Elektraweb ne işe yarar?</h2>
+        <h2 className="font-heading mt-12 text-2xl">Neden bu segment?</h2>
         <p className="mt-3 text-slate-700">
-          elektraweb.com bir otel PMS’idir: rezervasyon, check-in/out, folyo, blokaj,
-          kat hizmetleri, POS, ön muhasebe, CRM, kanal yöneticisi, online rezervasyon
-          motoru, acente kontratı, KBS kimlik bildirimi, e-fatura. Bulut, tarayıcı,
-          mobil. Firma 5.000+ referans, 4 kıta, 7/24 destek ve üniversite müfredatı
-          iddiasındadır. Teknoloji: Angular, Node.js. Fiyat: oda/modül aboneliği,
-          kanal yöneticisi pakete dahil.
-        </p>
-        <p className="mt-3 text-slate-700">
-          ETS zaten bu dünyanın içinde: Elektraweb yardım belgelerinde
-          <strong> EtsTourOperator </strong>
-          kurulumu var. Tesis operatör ID, kullanıcı kodu ve şifre girer; rezervasyonları
-          çeker; oda tipi / fiyat / pansiyon / acente kartını eşler. Kullanıcı kodu 2
-          boşsa <code>REZTIME</code> önerilir — yani bugün bağ çekme (polling) ile
-          çalışıyor, anlık push ile değil.
+          Türkiye’de küçük ve orta tesisin bir kısmı hâlâ PMS’siz veya yalnızca
+          kanal yöneticisiyle çalışıyor. Elektraweb / Opera eğitim ve maliyet
+          eşiği yüksek. ETS zaten bu otellerle kontratlı: yazılımı vermek hem oteli
+          dijitalleştirir hem stoku temizler. Grup tesisleri (Maxx Royal, Voyage,
+          Caja) kendi PMS’lerinde kalır.
         </p>
 
-        <h2 className="font-heading mt-12 text-2xl">ETS Tur bugün nerede?</h2>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700">
-          <li>
-            <strong>Etsgroup</strong> (1991): Etstur, Didimtur, Ucuzabilet, Otelpuan,
-            HotelAgent, Etscore, Etsevent. Kendi tesisleri: Maxx Royal, Voyage, Caja.
-          </li>
-          <li>
-            <strong>Etstur</strong> yurt içinde binlerce otelin satışını yapar.
-            Odamax ~200 bin küresel tesis. Etscore B2B: Türkiye’de 10.000+ direkt
-            kontrat, 1M+ global envanter.
-          </li>
-          <li>
-            <strong>Royal API</strong> (docs.etscore.com): auth, içerik, otel listesi,
-            arama, oda arama, rezervasyon, iptal. Bu, satış API’sidir; otel
-            extraneti değildir.
-          </li>
-          <li>
-            <strong>HotelAgent</strong> otellere çağrı merkezi ve dijital pazarlama
-            satar; tesis kontrol yazılımı değildir.
-          </li>
-          <li>
-            İç teknoloji izleri: Java/Spring, React, PostgreSQL, Docker. Satış
-            yığını hazır; otel-of-record yığını eksik.
-          </li>
-        </ul>
-
-        <h2 className="font-heading mt-12 text-2xl">Kritik ayrım</h2>
+        <h2 className="font-heading mt-12 text-2xl">Kapsam — evet / hayır</h2>
         <div className="mt-4 overflow-hidden rounded-xl bg-white ring-1 ring-foreground/10">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left">
               <tr>
-                <th className="px-4 py-2">Katman</th>
-                <th className="px-4 py-2">Elektraweb</th>
-                <th className="px-4 py-2">ETS Kontrol</th>
+                <th className="px-4 py-2">Var</th>
+                <th className="px-4 py-2">Yok (bilinçli)</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-t">
-                <td className="px-4 py-2">Kullanıcı</td>
-                <td className="px-4 py-2">Otel resepsiyonu</td>
-                <td className="px-4 py-2">ETS kontrat + gelir + otel partneri</td>
+                <td className="px-4 py-2">Rezervasyon, blokaj, check-in/out</td>
+                <td className="px-4 py-2">800 odalık all-inclusive POS ağı</td>
               </tr>
               <tr className="border-t">
-                <td className="px-4 py-2">Envanter</td>
-                <td className="px-4 py-2">Tüm odalar</td>
-                <td className="px-4 py-2">Sadece kontratlı kontenjan</td>
+                <td className="px-4 py-2">Kat hizmeti, arıza, folyo</td>
+                <td className="px-4 py-2">SPA, marina, fuar, karbon sertifikası</td>
               </tr>
               <tr className="border-t">
-                <td className="px-4 py-2">Check-in / POS / KBS</td>
-                <td className="px-4 py-2">Zorunlu</td>
-                <td className="px-4 py-2">İlk yılda yok</td>
-              </tr>
-              <tr className="border-t">
-                <td className="px-4 py-2">Kanal</td>
-                <td className="px-4 py-2">Booking, Expedia, ETS…</td>
-                <td className="px-4 py-2">etstur.com, Etscore, Odamax</td>
+                <td className="px-4 py-2">ETS kontenjan ve kontrat fiyatı</td>
+                <td className="px-4 py-2">Booking.com kanal yöneticisi (sonra)</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p className="mt-4 text-slate-700">
-          Tam PMS klonu: onlarca yıl, 100+ kişi, otellerin mevcut Elektraweb/Opera
-          kurulumunu sökme savaşı. ETS’nin kazanacağı yer, otelin PMS’ine rakip
-          olmak değil; PMS’lerin bağlandığı <em>kaynak sistem</em> olmak.
-        </p>
 
         <h2 className="font-heading mt-12 text-2xl">Fazlar</h2>
         <ol className="mt-4 space-y-4">
@@ -183,34 +118,6 @@ export default function RoadmapPage() {
             </li>
           ))}
         </ol>
-
-        <h2 className="font-heading mt-12 text-2xl">Mimari öneri</h2>
-        <p className="mt-3 text-slate-700">
-          Çekirdek: tesis, oda tipi, kontenjan hücresi, fiyat planı, rezervasyon.
-          Etrafında: PMS bağdaştırıcıları (Elektraweb önce; hacim burada), stok
-          yayın servisi (Royal API + OTA siteleri), partner extranet, yetki ve
-          audit. Türkiye’ye özgü KBS / e-fatura otel PMS’inde kalsın; ETS tarafında
-          voucher ve faturalama cari hesap yeter.
-        </p>
-        <p className="mt-3 text-slate-700">
-          Rakipler: Sedna (resort + tur operatörü kontratı), HotelRunner (kanal),
-          Opera (zincir standardı). ETS’nin avantajı envanterin zaten kendisinde
-          olması — yazılım eksik olan parça.
-        </p>
-
-        <h2 className="font-heading mt-12 text-2xl">Riskler</h2>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-700">
-          <li>Kapsam şişmesi: POS ve kat hizmeti eklemek projeyi Elektraweb yarışına sokar.</li>
-          <li>Eşleme kalitesi: yanlış oda tipi overbooking üretir. İlk müşteri Elektraweb otelleri olmalı.</li>
-          <li>Polling alışkanlığı: oteller EXE tarayıcı kullanıyor. Webhook’a geçiş eğitim ister.</li>
-          <li>Çift stok: PMS ve ETS aynı anda satarsa. Tek kaynak kuralı yazılı olmalı.</li>
-        </ul>
-
-        <p className="mt-10 text-sm text-slate-500">
-          Kaynaklar: elektraweb.com, elektraotel.com, Elektraweb yardım (EtsTourOperator,
-          kontrat, stop sale), etsgroup.com.tr, etscore.com, docs.etscore.com, hotelagent.com,
-          Türkiye PMS karşılaştırmaları 2026.
-        </p>
       </article>
     </div>
   )

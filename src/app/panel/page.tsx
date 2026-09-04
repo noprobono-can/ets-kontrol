@@ -16,9 +16,11 @@ import { TODAY, formatDay, formatMoney } from "@/lib/dates"
 import {
   arrivalsOn,
   departuresOn,
+  hkSummary,
   hotelAllotmentFill,
   inHouseOn,
-  stopSaleCount,
+  openHkTasks,
+  roomsOf,
 } from "@/lib/selectors"
 import { useStore } from "@/lib/store"
 
@@ -43,34 +45,47 @@ export default function DashboardPage() {
     },
     { allotted: 0, sold: 0 }
   )
-  const stopSales = scopedHotels.reduce(
-    (acc, hotel) => acc + stopSaleCount(state, TODAY, hotel.id),
-    0
-  )
   const revenue = inHouse.reduce((acc, item) => acc + item.amount, 0)
   const attention = scopedHotels
     .map((hotel) => ({
       hotel,
       fill: hotelAllotmentFill(state, hotel.id, TODAY),
+      dirty: hkSummary(roomsOf(state, hotel.id)).dirty,
     }))
     .filter(
       (row) =>
         row.hotel.status !== "Aktif" ||
-        row.hotel.integration !== "Çift yönlü" ||
-        row.fill.fill >= 0.9
+        row.fill.fill >= 0.9 ||
+        row.dirty >= 4
     )
+
+  const hk = hkSummary(
+    scopedHotels.flatMap((hotel) => roomsOf(state, hotel.id))
+  )
+  const openTasks = scopedHotels.reduce(
+    (acc, hotel) => acc + openHkTasks(state, hotel.id).length,
+    0
+  )
 
   return (
     <div>
       <PageHeader
-        title={view.role === "otel" ? "Tesis günlük durum" : "Merkez günlük durum"}
-        description="Elektraweb’deki günlük durum ekranının tur operatörü karşılığı: kontenjan, giriş-çıkış ve entegrasyon sağlığı tek bakışta."
+        title={
+          view.role === "otel" ? "Otel günlük durum" : "ETS PMS — tüm tesisler"
+        }
+        description="İmkânı olmayan 5 yıldız ve altı otellere verilen yönetim sistemi: rezervasyon, ön büro, kat hizmeti ve folyo tek yerde."
       />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          label="Kontratlı tesis"
-          value={String(scopedHotels.length)}
-          hint={`${scopedHotels.filter((item) => item.status === "Aktif").length} aktif`}
+          label="Kirli oda"
+          value={String(hk.dirty)}
+          hint={`${openTasks} açık kat görevi`}
+          tone={hk.dirty > 0 ? "warn" : "good"}
+        />
+        <KpiCard
+          label="Bugünkü hareket"
+          value={`${arrivals.length} giriş`}
+          hint={`${departures.length} çıkış · ${inHouse.length} in-house`}
         />
         <KpiCard
           label="ETS kontenjan"
@@ -79,15 +94,9 @@ export default function DashboardPage() {
           tone={fill.sold / Math.max(fill.allotted, 1) > 0.9 ? "warn" : "good"}
         />
         <KpiCard
-          label="Bugünkü hareket"
-          value={`${arrivals.length} giriş`}
-          hint={`${departures.length} çıkış · ${inHouse.length} in-house`}
-        />
-        <KpiCard
-          label="Stop sale hücresi"
-          value={String(stopSales)}
-          hint="Bugün kapatılmış oda tipi × tarih"
-          tone={stopSales > 0 ? "warn" : "default"}
+          label="PMS verilen tesis"
+          value={String(scopedHotels.filter((item) => item.usesEtsPms).length)}
+          hint={`${scopedHotels.length} toplam görünüm`}
         />
       </div>
 

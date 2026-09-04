@@ -8,11 +8,22 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react"
+import { TODAY } from "./dates"
 import { createSeedState } from "./seed"
-import type { AllotmentCell, AppState, Reservation, Role, ViewState } from "./types"
+import type {
+  ActionResult,
+  AllotmentCell,
+  AppState,
+  FolioDepartment,
+  FolioItem,
+  HousekeepingStatus,
+  Reservation,
+  Role,
+  ViewState,
+} from "./types"
 
-const STORAGE_KEY = "ets-kontrol-state-v1"
-const VIEW_KEY = "ets-kontrol-view-v1"
+const STORAGE_KEY = "ets-kontrol-state-v2"
+const VIEW_KEY = "ets-kontrol-view-v2"
 
 type Store = {
   state: AppState
@@ -22,6 +33,20 @@ type Store = {
   upsertReservation: (reservation: Reservation) => void
   setReservationStatus: (id: string, status: Reservation["status"]) => void
   assignRoom: (reservationId: string, roomId: string | null) => void
+  checkIn: (id: string) => ActionResult
+  checkOut: (id: string) => ActionResult
+  updateRoomHk: (
+    roomId: string,
+    patch: {
+      hkStatus?: HousekeepingStatus
+      hkAssignee?: string | null
+      hkNote?: string
+    }
+  ) => void
+  addFolio: (
+    reservationId: string,
+    item: { department: FolioDepartment; description: string; amount: number }
+  ) => void
   updateAllotment: (
     hotelId: string,
     roomTypeId: string,
@@ -34,7 +59,7 @@ type Store = {
 
 const StoreContext = createContext<Store | null>(null)
 
-const DEFAULT_VIEW: ViewState = { role: "merkez", hotelId: "voyage-belek" }
+const DEFAULT_VIEW: ViewState = { role: "otel", hotelId: "fethiye-hill" }
 
 let memory: AppState | null = null
 let viewMemory: ViewState | null = null
@@ -54,7 +79,7 @@ function readState(): AppState {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return createSeedState()
     const parsed = JSON.parse(raw) as AppState
-    if (!parsed.hotels?.length) return createSeedState()
+    if (!parsed.hotels?.length || !parsed.hkTasks) return createSeedState()
     return parsed
   } catch {
     return createSeedState()
@@ -98,8 +123,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const view = useSyncExternalStore(subscribe, getView, () => DEFAULT_VIEW)
 
   const setRole = useCallback((role: Role, hotelId?: string) => {
-    const current = getView()
-    persistView({ role, hotelId: hotelId ?? current.hotelId })
+    persistView({ role, hotelId: hotelId ?? getView().hotelId })
   }, [])
 
   const setHotel = useCallback((hotelId: string) => {
@@ -141,6 +165,108 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ),
     })
   }, [])
+
+  const checkIn = useCallback((id: string): ActionResult => {
+    const current = getState()
+    const reservation = current.reservations.find((item) => item.id === id)
+    if (!reservation) return { ok: false, reason: "Rezervasyon yok" }
+    if (!reservation.roomId) return { ok: false, reason: "Önce oda atayın" }
+    const room = current.rooms.find((item) => item.id === reservation.roomId)
+    if (!room) return { ok: false, reason: "Oda bulunamadı" }
+    if (room.hkStatus === "Arızalı") {
+      return { ok: false, reason: "Oda arızalı, check-in yapılamaz" }
+    }
+    if (room.hkStatus === "Kirli") {
+      return { ok: false, reason: "Oda kirli. Kat hizmeti temizlemeden giriş olmaz" }
+    }
+    persistState({
+      ...current,
+      reservations: current.reservations.map((item) =>
+        item.id === id ? { ...item, status: "Check-in" } : item
+      ),
+    })
+    return { ok: true }
+  }, [])
+
+  const checkOut = useCallback((id: string): ActionResult => {
+    const current = getState()
+    const reservation = current.reservations.find((item) => item.id === id)
+    if (!reservation?.roomId) {
+      persistState({
+        ...current,
+        reservations: current.reservations.map((item) =>
+          item.id === id ? { ...item, status: "Check-out" } : item
+        ),
+      })
+      return { ok: true }
+    }
+    const room = current.rooms.find((item) => item.id === reservation.roomId)
+    persistState({
+      ...current,
+      reservations: current.reservations.map((item) =>
+        item.id === id ? { ...item, status: "Check-out" } : item
+      ),
+      rooms: current.rooms.map((item) =>
+        item.id === reservation.roomId
+          ? { ...item, hkStatus: "Kirli", hkNote: "Çıkış temizliği bekliyor" }
+          : item
+      ),
+      hkTasks: [
+        {
+          id: `hk-${reservation.roomId}-${Date.now()}`,
+          hotelId: reservation.hotelId,
+          roomId: reservation.roomId,
+          type: "Çıkış temizliği",
+          status: "Açık",
+          assignee: room?.hkAssignee ?? "Fatma Yıldız",
+          due: TODAY,
+        },
+        ...current.hkTasks,
+      ],
+    })
+    return { ok: true }
+  }, [])
+
+  const updateRoomHk = useCallback(
+    (
+      roomId: string,
+      patch: {
+        hkStatus?: HousekeepingStatus
+        hkAssignee?: string | null
+        hkNote?: string
+      }
+    ) => {
+      const current = getState()
+      persistState({
+        ...current,
+        rooms: current.rooms.map((item) =>
+          item.id === roomId ? { ...item, ...patch } : item
+        ),
+        hkTasks: current.hkTasks.map((task) =>
+          task.roomId === roomId && patch.hkStatus === "Temiz"
+            ? { ...task, status: "Tamam" }
+            : task
+        ),
+      })
+    },
+    []
+  )
+
+  const addFolio = useCallback(
+    (
+      reservationId: string,
+      item: { department: FolioDepartment; description: string; amount: number }
+    ) => {
+      const current = getState()
+      const extra: FolioItem = {
+        id: `f-${Date.now()}`,
+        reservationId,
+        ...item,
+      }
+      persistState({ ...current, folio: [...current.folio, extra] })
+    },
+    []
+  )
 
   const updateAllotment = useCallback(
     (
@@ -187,6 +313,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertReservation,
       setReservationStatus,
       assignRoom,
+      checkIn,
+      checkOut,
+      updateRoomHk,
+      addFolio,
       updateAllotment,
       updateRate,
       reset,
@@ -199,6 +329,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertReservation,
       setReservationStatus,
       assignRoom,
+      checkIn,
+      checkOut,
+      updateRoomHk,
+      addFolio,
       updateAllotment,
       updateRate,
       reset,

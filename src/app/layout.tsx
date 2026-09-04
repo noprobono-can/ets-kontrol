@@ -20,9 +20,9 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: "ETS Kontrol — Kontratlı tesis yönetim sistemi",
+  title: "ETS Kontrol — 5 yıldız ve altı otel PMS’i",
   description:
-    "ETS Tur için Elektraweb tarzında, kontratlı otelleri merkezden yöneten otel kontrol sistemi.",
+    "ETS Tur’un imkânı olmayan otellere verdiği yönetim sistemi: rezervasyon, kat hizmeti, folyo.",
 }
 
 export default function RootLayout({
