@@ -1,24 +1,24 @@
 "use client"
 
-import { useMemo, type ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   BedDouble,
   Building2,
-  CalendarRange,
+  CalendarDays,
   LayoutDashboard,
-  Map,
   Menu,
-  RotateCcw,
-  Sparkles,
-  Ticket,
   Users,
-  Wallet,
 } from "lucide-react"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Sheet,
   SheetContent,
@@ -26,29 +26,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { TODAY, formatLong } from "@/lib/dates"
-import { useStore } from "@/lib/store"
+import { usePms } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
 const NAV = [
-  { href: "/panel", label: "Günlük durum", icon: LayoutDashboard },
-  { href: "/panel/blokaj", label: "Blokaj", icon: BedDouble },
-  { href: "/panel/rezervasyonlar", label: "Rezervasyonlar", icon: Ticket },
-  { href: "/panel/kat-hizmetleri", label: "Kat hizmetleri", icon: Sparkles },
-  { href: "/panel/konaklayanlar", label: "Konaklayanlar", icon: Users },
-  { href: "/panel/kontenjan", label: "Kontenjan", icon: CalendarRange },
-  { href: "/panel/fiyatlar", label: "Fiyatlar", icon: Wallet },
-  { href: "/panel/oteller", label: "Tesisler", icon: Building2 },
+  { href: "/pms", label: "Günlük pano", icon: LayoutDashboard },
+  { href: "/pms/odalar", label: "Odalar", icon: BedDouble },
+  { href: "/pms/rezervasyonlar", label: "Rezervasyonlar", icon: CalendarDays },
+  { href: "/pms/misafirler", label: "Misafirler", icon: Users },
+  { href: "/pms/oteller", label: "ETS otelleri", icon: Building2 },
 ]
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
   return (
-    <nav className="flex flex-col gap-0.5">
+    <nav className="flex flex-col gap-1">
       {NAV.map((item) => {
         const active =
-          item.href === "/panel"
-            ? pathname === "/panel"
+          item.href === "/pms"
+            ? pathname === "/pms"
             : pathname.startsWith(item.href)
         const Icon = item.icon
         return (
@@ -57,10 +53,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               active
-                ? "bg-white/12 text-white"
-                : "text-white/70 hover:bg-white/8 hover:text-white"
+                ? "bg-white/15 text-white"
+                : "text-white/70 hover:bg-white/10 hover:text-white"
             )}
           >
             <Icon className="size-4" />
@@ -72,141 +68,140 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
-function RoleSwitch() {
-  const { state, view, setRole, setHotel } = useStore()
-  return (
-    <div className="space-y-2 rounded-xl bg-white/6 p-3 ring-1 ring-white/10">
-      <p className="text-[11px] font-medium tracking-wide text-white/50 uppercase">
-        Görünüm
-      </p>
-      <div className="grid grid-cols-2 gap-1 rounded-lg bg-black/20 p-1">
-        <button
-          type="button"
-          onClick={() => setRole("merkez")}
-          className={cn(
-            "rounded-md px-2 py-1.5 text-xs font-medium",
-            view.role === "merkez" ? "bg-white text-slate-900" : "text-white/70"
-          )}
-        >
-          ETS merkez
-        </button>
-        <button
-          type="button"
-          onClick={() => setRole("otel")}
-          className={cn(
-            "rounded-md px-2 py-1.5 text-xs font-medium",
-            view.role === "otel" ? "bg-white text-slate-900" : "text-white/70"
-          )}
-        >
-          Otel
-        </button>
-      </div>
-      <label className="block text-[11px] text-white/50">Aktif tesis</label>
-      <select
-        value={view.hotelId}
-        onChange={(event) => setHotel(event.target.value)}
-        className="h-8 w-full rounded-md border border-white/15 bg-black/20 px-2 text-xs text-white outline-none"
-      >
-        {state.hotels.map((hotel) => (
-          <option key={hotel.id} value={hotel.id} className="text-slate-900">
-            {hotel.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  )
-}
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const { view, state, hotel, setRole, setHotelId, resetDemo } = usePms()
 
-function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
-  const { reset } = useStore()
   return (
-    <div className="flex h-full flex-col gap-6">
-      <Link href="/" onClick={onNavigate} className="px-1">
-        <p className="text-[11px] tracking-[0.18em] text-teal-200/80 uppercase">
-          Etsgroup
-        </p>
-        <p className="font-heading text-lg font-semibold text-white">ETS Kontrol</p>
-        <p className="text-xs text-white/55">5 yıldız ve altı otel PMS’i</p>
-      </Link>
-      <RoleSwitch />
-      <NavLinks onNavigate={onNavigate} />
-      <div className="mt-auto space-y-3">
-        <Link
-          href="/yol-haritasi"
-          onClick={onNavigate}
-          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-white/70 hover:bg-white/8 hover:text-white"
-        >
-          <Map className="size-4" />
-          Yol haritası
+    <div className="flex min-h-dvh bg-[#f6f3ee]">
+      <aside className="hidden w-60 shrink-0 flex-col bg-[#1b2a4a] p-4 text-white lg:flex">
+        <Link href="/" className="mb-6 block">
+          <p className="text-[11px] font-semibold tracking-[0.18em] text-orange-300 uppercase">
+            ETSTUR
+          </p>
+          <p className="font-[family-name:var(--font-heading)] text-xl leading-tight">
+            ETS Kontrol
+          </p>
+          <p className="mt-1 text-xs text-white/55">Otel PMS · yalnızca ETS otelleri</p>
         </Link>
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-white/70 hover:bg-white/8 hover:text-white"
-          onClick={() => {
-            reset()
-            toast.success("Demo verisi sıfırlandı")
-          }}
-        >
-          <RotateCcw data-icon="inline-start" />
-          Veriyi sıfırla
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-export function AppShell({ children }: { children: ReactNode }) {
-  const { state, view } = useStore()
-  const hotel = useMemo(
-    () => state.hotels.find((item) => item.id === view.hotelId),
-    [state.hotels, view.hotelId]
-  )
-
-  return (
-    <div className="flex min-h-svh bg-[#f4f1ea]">
-      <aside className="hidden w-64 shrink-0 bg-[#0b1f36] p-4 text-white lg:flex lg:flex-col">
-        <SidebarBody />
+        <NavLinks />
+        <div className="mt-auto space-y-2 pt-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-white/70 hover:bg-white/10 hover:text-white"
+            onClick={resetDemo}
+          >
+            Demo verisini sıfırla
+          </Button>
+        </div>
       </aside>
+
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-black/5 bg-[#f4f1ea]/90 px-4 py-3 backdrop-blur-md">
-          <div className="flex items-center gap-2">
-            <Sheet>
-              <SheetTrigger
-                render={
-                  <Button variant="outline" size="icon" className="lg:hidden" />
-                }
-              >
-                <Menu />
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                className="w-72 border-0 bg-[#0b1f36] p-4 text-white"
-              >
-                <SheetHeader className="sr-only">
-                  <SheetTitle>Menü</SheetTitle>
-                </SheetHeader>
-                <SidebarBody />
-              </SheetContent>
-            </Sheet>
-            <div>
-              <p className="text-sm font-medium text-slate-900">
-                {view.role === "merkez" ? "Merkez operasyon" : hotel?.name}
-              </p>
-              <p className="text-xs text-slate-500">{formatLong(TODAY)}</p>
-            </div>
+        <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-black/5 bg-[#1b2a4a] px-3 py-2 text-white lg:bg-[#f6f3ee] lg:px-6 lg:py-3 lg:text-slate-900">
+          <Sheet>
+            <SheetTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden text-white hover:bg-white/10"
+                />
+              }
+            >
+              <Menu className="size-5" />
+              <span className="sr-only">Menü</span>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-64 border-none bg-[#1b2a4a] p-4 text-white"
+            >
+              <SheetHeader>
+                <SheetTitle className="text-left text-white">ETS Kontrol</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4">
+                <NavLinks />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <div className="hidden min-w-0 lg:block">
+            <p className="truncate text-sm font-semibold">
+              {hotel?.name ?? "Otel seçin"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {formatLongHeader()} · {view.role === "merkez" ? "ETS Merkez" : "Otel resepsiyon"}
+            </p>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span className="hidden sm:inline">
-              {state.hotels.length} tesis · {state.reservations.length} rezervasyon
-            </span>
-            <Separator orientation="vertical" className="hidden h-4 sm:block" />
-            <span className="rounded-full bg-teal-700/10 px-2 py-1 font-medium text-teal-800">
-              Demo
-            </span>
+
+          <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 lg:flex-none">
+            <div className="flex rounded-lg bg-white/10 p-0.5 lg:bg-slate-200/70">
+              <Button
+                size="xs"
+                variant={view.role === "otel" ? "default" : "ghost"}
+                className={cn(
+                  "h-7 px-2.5",
+                  view.role !== "otel" &&
+                    "text-white lg:text-slate-700 hover:bg-white/10 lg:hover:bg-white/60"
+                )}
+                onClick={() => setRole("otel")}
+              >
+                Otel
+              </Button>
+              <Button
+                size="xs"
+                variant={view.role === "merkez" ? "default" : "ghost"}
+                className={cn(
+                  "h-7 px-2.5",
+                  view.role !== "merkez" &&
+                    "text-white lg:text-slate-700 hover:bg-white/10 lg:hover:bg-white/60"
+                )}
+                onClick={() => setRole("merkez")}
+              >
+                ETS Merkez
+              </Button>
+            </div>
+            <Select
+              value={view.hotelId}
+              onValueChange={(value) => {
+                if (value) setHotelId(value)
+              }}
+            >
+              <SelectTrigger
+                size="sm"
+                className="max-w-[11rem] border-white/20 bg-white/10 text-white sm:max-w-[16rem] lg:border-border lg:bg-white lg:text-foreground"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {state.hotels.map((h) => (
+                  <SelectItem key={h.id} value={h.id}>
+                    {h.name}
+                    {h.newReservationsClosed ? " · durduruldu" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </header>
-        <main className="flex-1 px-4 py-5 sm:px-6">{children}</main>
+
+        {hotel?.newReservationsClosed ? (
+          <div className="border-b border-orange-200 bg-orange-50 px-4 py-2 text-sm text-orange-950 lg:px-6">
+            <Badge className="mr-2 bg-orange-600 text-white">ETS Merkez</Badge>
+            {hotel.name} için yeni rezervasyon durduruldu. Beklenen girişler ve
+            çıkışlar işlenmeye devam eder.
+          </div>
+        ) : null}
+
+        <main className="flex-1 px-4 py-4 lg:px-6 lg:py-6">{children}</main>
       </div>
     </div>
   )
+}
+
+function formatLongHeader() {
+  return new Date(2026, 8, 4).toLocaleDateString("tr-TR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  })
 }

@@ -1,30 +1,30 @@
 # ETS Kontrol
 
-ETS Tur’un, Elektraweb / Opera alamayan **5 yıldız ve altı** otellere verdiği otel yönetim sistemi (PMS). Rezervasyon, blokaj, check-in/out, kat hizmeti ve folyo aynı panelde.
+Yalnızca **ETSTUR otelleri** için otel PMS’i. Resepsiyon odaları, rezervasyonları, giriş-çıkışı ve konaklayan misafirleri yönetir. ETS Merkez aynı veriyi görür ve yeni rezervasyonu durdurabilir.
 
-Grup tesisleri (Maxx Royal, Voyage, Caja) kendi PMS’lerinde kalır. Bu ürün, Excel veya yalnızca kanal yöneticisiyle dönen kontratlı oteller içindir.
+Bu bir kontenjan / tur operatörü kontrol paneli değildir. Maxx Royal veya Voyage gibi kendi PMS’i olan gruplar kapsam dışıdır.
 
-## Çalıştırma
+Canonical repo: [github.com/noprobono-can/ets-kontrol](https://github.com/noprobono-can/ets-kontrol)
+
+## Demo
+
+Veri tarayıcıda (`localStorage`) tutulur. Varsayılan tesis **Fethiye Hillside**, gün **4 Eylül 2026**.
+
+- Kirli veya arızalı odaya giriş alınamaz.
+- Çıkış odayı kirli işaretler.
+- Kaş Mavi Butik, fırtına senaryosuyla yeni rezervasyonu durdurulmuş gelir.
+- Üstten **Otel** / **ETS Merkez** rolünü değiştirin.
+
+## Yerelde çalıştırma
 
 ```bash
 npm install
 npm run dev
 ```
 
-Tarayıcı varsayılanı: `http://127.0.0.1:4317`
+Uygulama `http://127.0.0.1:4521` adresinde açılır.
 
-| Yol | Ne işe yarar |
-| --- | --- |
-| `/` | Ürün özeti |
-| `/panel` | Günlük durum (otel veya ETS merkez) |
-| `/panel/blokaj` | Oda rack, check-in (kirli odaya giriş yok) |
-| `/panel/kat-hizmetleri` | Temiz / kirli / kontrol / arıza |
-| `/panel/konaklayanlar` | Folyo, ekstra, check-out |
-| `/panel/rezervasyonlar` | Voucher ve kanal |
-| `/yol-haritasi` | Faz planı |
-
-Demo veri `localStorage` içindedir. Kenar çubuğundan **Otel** görünümü Fethiye Hillside ile açılır. **Veriyi sıfırla** seed’e döner.
-
-## Bilinçli olarak yok
-
-Çoklu restoran POS, SPA, KBS, e-fatura, kapı kilidi. Sonraki fazlar `/yol-haritasi` sayfasında.
+```bash
+npm run build
+npm start
+```

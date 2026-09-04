@@ -1,48 +1,35 @@
 import { Badge } from "@/components/ui/badge"
-import type { Hotel, HousekeepingStatus, Integration, ReservationStatus } from "@/lib/types"
+import { roomStatusLabel, reservationStatusLabel } from "@/lib/labels"
+import type { ReservationStatus, RoomStatus } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
-export function StatusBadge({ status }: { status: Hotel["status"] }) {
-  if (status === "Aktif") {
-    return <Badge className="bg-teal-700/15 text-teal-800">{status}</Badge>
-  }
-  if (status === "Stop sale") {
-    return <Badge variant="destructive">{status}</Badge>
-  }
-  return <Badge variant="secondary">{status}</Badge>
+const roomTone: Record<RoomStatus, string> = {
+  bos: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  dolu: "bg-sky-50 text-sky-900 border-sky-200",
+  kirli: "bg-amber-50 text-amber-900 border-amber-200",
+  arizali: "bg-rose-50 text-rose-900 border-rose-200",
 }
 
-export function IntegrationBadge({ value }: { value: Integration }) {
-  if (value === "Çift yönlü" || value === "Yerel PMS") {
-    return <Badge className="bg-teal-700/15 text-teal-800">{value}</Badge>
-  }
-  if (value === "Polling") {
-    return <Badge className="bg-amber-500/15 text-amber-800">{value}</Badge>
-  }
-  return <Badge variant="destructive">{value}</Badge>
+const resTone: Record<ReservationStatus, string> = {
+  bekliyor: "bg-orange-50 text-orange-900 border-orange-200",
+  iceri: "bg-sky-50 text-sky-900 border-sky-200",
+  cikti: "bg-zinc-100 text-zinc-700 border-zinc-200",
+  iptal: "bg-zinc-100 text-zinc-500 border-zinc-200",
+  "no-show": "bg-rose-50 text-rose-800 border-rose-200",
 }
 
-export function HousekeepingBadge({ status }: { status: HousekeepingStatus }) {
-  const map: Record<HousekeepingStatus, string> = {
-    Temiz: "bg-teal-700/15 text-teal-800",
-    Kirli: "bg-amber-500/20 text-amber-900",
-    Kontrol: "bg-sky-600/15 text-sky-800",
-    Arızalı: "bg-destructive/10 text-destructive",
-  }
-  return <Badge className={map[status]}>{status}</Badge>
+export function RoomBadge({ status }: { status: RoomStatus }) {
+  return (
+    <Badge variant="outline" className={cn("font-medium", roomTone[status])}>
+      {roomStatusLabel[status]}
+    </Badge>
+  )
 }
 
 export function ReservationBadge({ status }: { status: ReservationStatus }) {
-  const map: Record<ReservationStatus, string> = {
-    Opsiyon: "bg-amber-500/15 text-amber-800",
-    Konfirmeli: "bg-sky-600/15 text-sky-800",
-    "Check-in": "bg-teal-700/15 text-teal-800",
-    "Check-out": "bg-slate-500/15 text-slate-700",
-    İptal: "bg-destructive/10 text-destructive",
-    "No-show": "bg-destructive/10 text-destructive",
-  }
-  return <Badge className={map[status]}>{status}</Badge>
-}
-
-export function ChannelBadge({ channel }: { channel: string }) {
-  return <Badge variant="outline">{channel}</Badge>
+  return (
+    <Badge variant="outline" className={cn("font-medium", resTone[status])}>
+      {reservationStatusLabel[status]}
+    </Badge>
+  )
 }

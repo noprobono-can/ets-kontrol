@@ -4,346 +4,320 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
-  useSyncExternalStore,
+  useState,
   type ReactNode,
 } from "react"
+import { toast } from "sonner"
 import { TODAY } from "./dates"
-import { createSeedState } from "./seed"
-import type {
-  ActionResult,
-  AllotmentCell,
-  AppState,
-  FolioDepartment,
-  FolioItem,
-  HousekeepingStatus,
-  Reservation,
-  Role,
-  ViewState,
-} from "./types"
+import { DEFAULT_HOTEL_ID, createSeedState } from "./seed"
+import type { PmsState, Reservation, Role, Room, ViewState } from "./types"
 
-const STORAGE_KEY = "ets-kontrol-state-v2"
-const VIEW_KEY = "ets-kontrol-view-v2"
+const STATE_KEY = "ets-pms-state-v1"
+const VIEW_KEY = "ets-pms-view-v1"
 
-type Store = {
-  state: AppState
+type PmsContextValue = {
+  ready: boolean
+  state: PmsState
   view: ViewState
-  setRole: (role: Role, hotelId?: string) => void
-  setHotel: (hotelId: string) => void
-  upsertReservation: (reservation: Reservation) => void
-  setReservationStatus: (id: string, status: Reservation["status"]) => void
-  assignRoom: (reservationId: string, roomId: string | null) => void
-  checkIn: (id: string) => ActionResult
-  checkOut: (id: string) => ActionResult
-  updateRoomHk: (
-    roomId: string,
-    patch: {
-      hkStatus?: HousekeepingStatus
-      hkAssignee?: string | null
-      hkNote?: string
-    }
-  ) => void
-  addFolio: (
-    reservationId: string,
-    item: { department: FolioDepartment; description: string; amount: number }
-  ) => void
-  updateAllotment: (
-    hotelId: string,
-    roomTypeId: string,
-    date: string,
-    patch: Partial<Pick<AllotmentCell, "allotted" | "stopSale">>
-  ) => void
-  updateRate: (id: string, doubleRate: number) => void
-  reset: () => void
+  hotel: PmsState["hotels"][number] | undefined
+  setRole: (role: Role) => void
+  setHotelId: (hotelId: string) => void
+  checkIn: (reservationId: string) => void
+  checkOut: (reservationId: string) => void
+  markNoShow: (reservationId: string) => void
+  markRoomClean: (roomId: string) => void
+  setNewReservationsClosed: (hotelId: string, closed: boolean) => void
+  createWalkIn: (input: {
+    guestName: string
+    guestCount: number
+    nights: number
+    roomId: string
+  }) => void
+  resetDemo: () => void
 }
 
-const StoreContext = createContext<Store | null>(null)
+const PmsContext = createContext<PmsContextValue | null>(null)
 
-const DEFAULT_VIEW: ViewState = { role: "otel", hotelId: "fethiye-hill" }
-
-let memory: AppState | null = null
-let viewMemory: ViewState | null = null
-const listeners = new Set<() => void>()
-
-function emit() {
-  listeners.forEach((listener) => listener())
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function readState(): AppState {
+function loadState(): PmsState {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return createSeedState()
-    const parsed = JSON.parse(raw) as AppState
-    if (!parsed.hotels?.length || !parsed.hkTasks) return createSeedState()
-    return parsed
+    const raw = localStorage.getItem(STATE_KEY)
+    if (raw) return JSON.parse(raw) as PmsState
   } catch {
-    return createSeedState()
+    /* ignore */
   }
+  return createSeedState()
 }
 
-function readView(): ViewState {
+function loadView(): ViewState {
   try {
-    const raw = window.localStorage.getItem(VIEW_KEY)
-    if (!raw) return DEFAULT_VIEW
-    return JSON.parse(raw) as ViewState
+    const raw = localStorage.getItem(VIEW_KEY)
+    if (raw) return JSON.parse(raw) as ViewState
   } catch {
-    return DEFAULT_VIEW
+    /* ignore */
   }
+  return { role: "otel", hotelId: DEFAULT_HOTEL_ID }
 }
 
-function getState() {
-  if (!memory) memory = readState()
-  return memory
-}
+export function PmsProvider({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false)
+  const [state, setState] = useState<PmsState>(createSeedState)
+  const [view, setView] = useState<ViewState>({
+    role: "otel",
+    hotelId: DEFAULT_HOTEL_ID,
+  })
 
-function getView() {
-  if (!viewMemory) viewMemory = readView()
-  return viewMemory
-}
-
-function persistState(next: AppState) {
-  memory = next
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-  emit()
-}
-
-function persistView(next: ViewState) {
-  viewMemory = next
-  window.localStorage.setItem(VIEW_KEY, JSON.stringify(next))
-  emit()
-}
-
-export function StoreProvider({ children }: { children: ReactNode }) {
-  const state = useSyncExternalStore(subscribe, getState, createSeedState)
-  const view = useSyncExternalStore(subscribe, getView, () => DEFAULT_VIEW)
-
-  const setRole = useCallback((role: Role, hotelId?: string) => {
-    persistView({ role, hotelId: hotelId ?? getView().hotelId })
+  useEffect(() => {
+    setState(loadState())
+    setView(loadView())
+    setReady(true)
   }, [])
 
-  const setHotel = useCallback((hotelId: string) => {
-    persistView({ ...getView(), hotelId })
+  useEffect(() => {
+    if (!ready) return
+    localStorage.setItem(STATE_KEY, JSON.stringify(state))
+  }, [ready, state])
+
+  useEffect(() => {
+    if (!ready) return
+    localStorage.setItem(VIEW_KEY, JSON.stringify(view))
+  }, [ready, view])
+
+  const hotel = state.hotels.find((h) => h.id === view.hotelId)
+
+  const setRole = useCallback((role: Role) => {
+    setView((v) => ({ ...v, role }))
   }, [])
 
-  const upsertReservation = useCallback((reservation: Reservation) => {
-    const current = getState()
-    const exists = current.reservations.some((item) => item.id === reservation.id)
-    persistState({
-      ...current,
-      reservations: exists
-        ? current.reservations.map((item) =>
-            item.id === reservation.id ? reservation : item
+  const setHotelId = useCallback((hotelId: string) => {
+    setView((v) => ({ ...v, hotelId }))
+  }, [])
+
+  const resetDemo = useCallback(() => {
+    setState(createSeedState())
+    setView({ role: "otel", hotelId: DEFAULT_HOTEL_ID })
+    toast.success("Demo verisi sıfırlandı")
+  }, [])
+
+  const setNewReservationsClosed = useCallback(
+    (hotelId: string, closed: boolean) => {
+      setState((prev) => ({
+        ...prev,
+        hotels: prev.hotels.map((h) =>
+          h.id === hotelId ? { ...h, newReservationsClosed: closed } : h
+        ),
+      }))
+      toast.success(
+        closed
+          ? "Yeni rezervasyon durduruldu. Mevcut girişler devam eder."
+          : "Yeni rezervasyon yeniden açıldı."
+      )
+    },
+    []
+  )
+
+  const checkIn = useCallback((reservationId: string) => {
+    setState((prev) => {
+      const reservation = prev.reservations.find((r) => r.id === reservationId)
+      if (!reservation || reservation.status !== "bekliyor") {
+        toast.error("Bu rezervasyon için giriş yapılamaz.")
+        return prev
+      }
+      if (!reservation.roomId) {
+        toast.error("Önce oda atayın.")
+        return prev
+      }
+      const room = prev.rooms.find((r) => r.id === reservation.roomId)
+      if (!room) {
+        toast.error("Oda bulunamadı.")
+        return prev
+      }
+      if (room.status === "kirli") {
+        toast.error("Oda kirli. Kat hizmeti temizlemeden giriş yapılamaz.")
+        return prev
+      }
+      if (room.status === "arizali") {
+        toast.error("Oda arızalı. Giriş yapılamaz.")
+        return prev
+      }
+      if (room.status === "dolu") {
+        toast.error("Oda dolu.")
+        return prev
+      }
+      toast.success(`${reservation.guestName} giriş yaptı · oda ${room.number}`)
+      return {
+        ...prev,
+        rooms: prev.rooms.map((r) =>
+          r.id === room.id ? { ...r, status: "dolu" } : r
+        ),
+        reservations: prev.reservations.map((r) =>
+          r.id === reservationId ? { ...r, status: "iceri" } : r
+        ),
+      }
+    })
+  }, [])
+
+  const checkOut = useCallback((reservationId: string) => {
+    setState((prev) => {
+      const reservation = prev.reservations.find((r) => r.id === reservationId)
+      if (!reservation || reservation.status !== "iceri") {
+        toast.error("Bu rezervasyon için çıkış yapılamaz.")
+        return prev
+      }
+      toast.success(`${reservation.guestName} çıkış yaptı. Oda kirli olarak işaretlendi.`)
+      return {
+        ...prev,
+        rooms: prev.rooms.map((r) =>
+          r.id === reservation.roomId ? { ...r, status: "kirli" } : r
+        ),
+        reservations: prev.reservations.map((r) =>
+          r.id === reservationId ? { ...r, status: "cikti" } : r
+        ),
+      }
+    })
+  }, [])
+
+  const markNoShow = useCallback((reservationId: string) => {
+    setState((prev) => {
+      const reservation = prev.reservations.find((r) => r.id === reservationId)
+      if (!reservation || reservation.status !== "bekliyor") {
+        toast.error("Sadece beklenen rezervasyon gelmedi işaretlenebilir.")
+        return prev
+      }
+      toast.message(`${reservation.guestName} gelmedi olarak işlendi.`)
+      return {
+        ...prev,
+        reservations: prev.reservations.map((r) =>
+          r.id === reservationId ? { ...r, status: "no-show" } : r
+        ),
+      }
+    })
+  }, [])
+
+  const markRoomClean = useCallback((roomId: string) => {
+    setState((prev) => {
+      const room = prev.rooms.find((r) => r.id === roomId)
+      if (!room) return prev
+      if (room.status === "dolu") {
+        toast.error("Dolu oda temizlenemez. Önce çıkış alın.")
+        return prev
+      }
+      toast.success(`Oda ${room.number} temiz · satışa açık`)
+      return {
+        ...prev,
+        rooms: prev.rooms.map((r) =>
+          r.id === roomId ? { ...r, status: "bos" } : r
+        ),
+      }
+    })
+  }, [])
+
+  const createWalkIn = useCallback(
+    (input: {
+      guestName: string
+      guestCount: number
+      nights: number
+      roomId: string
+    }) => {
+      setState((prev) => {
+        const hotel = prev.hotels.find((h) => h.id === view.hotelId)
+        if (!hotel) return prev
+        if (hotel.newReservationsClosed) {
+          toast.error(
+            "ETS Merkez bu otelde yeni rezervasyonu durdurdu. Walk-in alınamaz."
           )
-        : [reservation, ...current.reservations],
-    })
-  }, [])
-
-  const setReservationStatus = useCallback(
-    (id: string, status: Reservation["status"]) => {
-      const current = getState()
-      persistState({
-        ...current,
-        reservations: current.reservations.map((item) =>
-          item.id === id ? { ...item, status } : item
-        ),
+          return prev
+        }
+        const room = prev.rooms.find((r) => r.id === input.roomId)
+        if (!room || room.hotelId !== hotel.id) {
+          toast.error("Oda seçin.")
+          return prev
+        }
+        if (room.status !== "bos") {
+          toast.error("Sadece boş odaya walk-in yazılır.")
+          return prev
+        }
+        const reservation: Reservation = {
+          id: `rsv-walk-${Date.now()}`,
+          hotelId: hotel.id,
+          confirmationNo: `ETS-WI-${String(Date.now()).slice(-6)}`,
+          guestName: input.guestName.trim(),
+          guestCount: input.guestCount,
+          nationality: "TR",
+          checkIn: TODAY,
+          checkOut: addDaysSafe(input.nights),
+          roomId: room.id,
+          roomType: room.type,
+          source: "resepsiyon",
+          status: "bekliyor",
+        }
+        toast.success("Walk-in kaydı açıldı. Girişi şimdi alabilirsiniz.")
+        return { ...prev, reservations: [...prev.reservations, reservation] }
       })
     },
-    []
+    [view.hotelId]
   )
 
-  const assignRoom = useCallback((reservationId: string, roomId: string | null) => {
-    const current = getState()
-    persistState({
-      ...current,
-      reservations: current.reservations.map((item) =>
-        item.id === reservationId ? { ...item, roomId } : item
-      ),
-    })
-  }, [])
-
-  const checkIn = useCallback((id: string): ActionResult => {
-    const current = getState()
-    const reservation = current.reservations.find((item) => item.id === id)
-    if (!reservation) return { ok: false, reason: "Rezervasyon yok" }
-    if (!reservation.roomId) return { ok: false, reason: "Önce oda atayın" }
-    const room = current.rooms.find((item) => item.id === reservation.roomId)
-    if (!room) return { ok: false, reason: "Oda bulunamadı" }
-    if (room.hkStatus === "Arızalı") {
-      return { ok: false, reason: "Oda arızalı, check-in yapılamaz" }
-    }
-    if (room.hkStatus === "Kirli") {
-      return { ok: false, reason: "Oda kirli. Kat hizmeti temizlemeden giriş olmaz" }
-    }
-    persistState({
-      ...current,
-      reservations: current.reservations.map((item) =>
-        item.id === id ? { ...item, status: "Check-in" } : item
-      ),
-    })
-    return { ok: true }
-  }, [])
-
-  const checkOut = useCallback((id: string): ActionResult => {
-    const current = getState()
-    const reservation = current.reservations.find((item) => item.id === id)
-    if (!reservation?.roomId) {
-      persistState({
-        ...current,
-        reservations: current.reservations.map((item) =>
-          item.id === id ? { ...item, status: "Check-out" } : item
-        ),
-      })
-      return { ok: true }
-    }
-    const room = current.rooms.find((item) => item.id === reservation.roomId)
-    persistState({
-      ...current,
-      reservations: current.reservations.map((item) =>
-        item.id === id ? { ...item, status: "Check-out" } : item
-      ),
-      rooms: current.rooms.map((item) =>
-        item.id === reservation.roomId
-          ? { ...item, hkStatus: "Kirli", hkNote: "Çıkış temizliği bekliyor" }
-          : item
-      ),
-      hkTasks: [
-        {
-          id: `hk-${reservation.roomId}-${Date.now()}`,
-          hotelId: reservation.hotelId,
-          roomId: reservation.roomId,
-          type: "Çıkış temizliği",
-          status: "Açık",
-          assignee: room?.hkAssignee ?? "Fatma Yıldız",
-          due: TODAY,
-        },
-        ...current.hkTasks,
-      ],
-    })
-    return { ok: true }
-  }, [])
-
-  const updateRoomHk = useCallback(
-    (
-      roomId: string,
-      patch: {
-        hkStatus?: HousekeepingStatus
-        hkAssignee?: string | null
-        hkNote?: string
-      }
-    ) => {
-      const current = getState()
-      persistState({
-        ...current,
-        rooms: current.rooms.map((item) =>
-          item.id === roomId ? { ...item, ...patch } : item
-        ),
-        hkTasks: current.hkTasks.map((task) =>
-          task.roomId === roomId && patch.hkStatus === "Temiz"
-            ? { ...task, status: "Tamam" }
-            : task
-        ),
-      })
-    },
-    []
-  )
-
-  const addFolio = useCallback(
-    (
-      reservationId: string,
-      item: { department: FolioDepartment; description: string; amount: number }
-    ) => {
-      const current = getState()
-      const extra: FolioItem = {
-        id: `f-${Date.now()}`,
-        reservationId,
-        ...item,
-      }
-      persistState({ ...current, folio: [...current.folio, extra] })
-    },
-    []
-  )
-
-  const updateAllotment = useCallback(
-    (
-      hotelId: string,
-      roomTypeId: string,
-      date: string,
-      patch: Partial<Pick<AllotmentCell, "allotted" | "stopSale">>
-    ) => {
-      const current = getState()
-      persistState({
-        ...current,
-        allotments: current.allotments.map((item) =>
-          item.hotelId === hotelId &&
-          item.roomTypeId === roomTypeId &&
-          item.date === date
-            ? { ...item, ...patch }
-            : item
-        ),
-      })
-    },
-    []
-  )
-
-  const updateRate = useCallback((id: string, doubleRate: number) => {
-    const current = getState()
-    persistState({
-      ...current,
-      rates: current.rates.map((item) =>
-        item.id === id ? { ...item, doubleRate } : item
-      ),
-    })
-  }, [])
-
-  const reset = useCallback(() => {
-    persistState(createSeedState())
-  }, [])
-
-  const value = useMemo<Store>(
+  const value = useMemo(
     () => ({
+      ready,
       state,
       view,
+      hotel,
       setRole,
-      setHotel,
-      upsertReservation,
-      setReservationStatus,
-      assignRoom,
+      setHotelId,
       checkIn,
       checkOut,
-      updateRoomHk,
-      addFolio,
-      updateAllotment,
-      updateRate,
-      reset,
+      markNoShow,
+      markRoomClean,
+      setNewReservationsClosed,
+      createWalkIn,
+      resetDemo,
     }),
     [
+      ready,
       state,
       view,
+      hotel,
       setRole,
-      setHotel,
-      upsertReservation,
-      setReservationStatus,
-      assignRoom,
+      setHotelId,
       checkIn,
       checkOut,
-      updateRoomHk,
-      addFolio,
-      updateAllotment,
-      updateRate,
-      reset,
+      markNoShow,
+      markRoomClean,
+      setNewReservationsClosed,
+      createWalkIn,
+      resetDemo,
     ]
   )
 
-  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
+  return <PmsContext.Provider value={value}>{children}</PmsContext.Provider>
 }
 
-export function useStore() {
-  const store = useContext(StoreContext)
-  if (!store) throw new Error("useStore must be used within StoreProvider")
-  return store
+function addDaysSafe(nights: number) {
+  const [y, m, d] = TODAY.split("-").map(Number)
+  const date = new Date(y, m - 1, d)
+  date.setDate(date.getDate() + nights)
+  const yy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, "0")
+  const dd = String(date.getDate()).padStart(2, "0")
+  return `${yy}-${mm}-${dd}`
+}
+
+export function usePms() {
+  const ctx = useContext(PmsContext)
+  if (!ctx) throw new Error("usePms must be used inside PmsProvider")
+  return ctx
+}
+
+export function roomsForHotel(rooms: Room[], hotelId: string) {
+  return rooms.filter((r) => r.hotelId === hotelId)
+}
+
+export function reservationsForHotel(
+  reservations: Reservation[],
+  hotelId: string
+) {
+  return reservations.filter((r) => r.hotelId === hotelId)
 }

@@ -18,47 +18,24 @@ export function addDays(iso: string, days: number) {
   return toIso(date)
 }
 
-export function diffDays(from: string, to: string) {
-  const a = parseDate(from).getTime()
-  const b = parseDate(to).getTime()
-  return Math.round((b - a) / 86_400_000)
-}
-
-export function dateRange(from: string, days: number) {
-  return Array.from({ length: days }, (_, i) => addDays(from, i))
-}
-
-export function overlaps(checkIn: string, checkOut: string, day: string) {
-  return day >= checkIn && day < checkOut
-}
-
-export function staysOn(checkIn: string, checkOut: string, day: string) {
-  return overlaps(checkIn, checkOut, day)
-}
-
-export function formatDay(iso: string) {
-  return parseDate(iso).toLocaleDateString("tr-TR", {
-    day: "numeric",
-    month: "short",
-  })
-}
-
-export function formatWeekday(iso: string) {
-  return parseDate(iso).toLocaleDateString("tr-TR", { weekday: "short" })
-}
-
 export function formatLong(iso: string) {
   return parseDate(iso).toLocaleDateString("tr-TR", {
+    weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   })
 }
 
-export function formatMoney(amount: number, currency: "EUR" | "TRY" = "EUR") {
-  return new Intl.NumberFormat("tr-TR", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount)
+export function formatShort(iso: string) {
+  return parseDate(iso).toLocaleDateString("tr-TR", {
+    day: "numeric",
+    month: "short",
+  })
+}
+
+export function nightsBetween(checkIn: string, checkOut: string) {
+  const a = parseDate(checkIn).getTime()
+  const b = parseDate(checkOut).getTime()
+  return Math.max(1, Math.round((b - a) / 86_400_000))
 }

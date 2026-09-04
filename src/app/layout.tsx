@@ -20,9 +20,9 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: "ETS Kontrol — 5 yıldız ve altı otel PMS’i",
+  title: "ETS Kontrol — ETSTUR otel PMS’i",
   description:
-    "ETS Tur’un imkânı olmayan otellere verdiği yönetim sistemi: rezervasyon, kat hizmeti, folyo.",
+    "Yalnızca ETSTUR otelleri için ön büro: oda, rezervasyon, giriş-çıkış, misafir ve günlük pano. ETS Merkez aynı veriyi görür ve yeni rezervasyonu durdurabilir.",
 }
 
 export default function RootLayout({
@@ -35,7 +35,7 @@ export default function RootLayout({
       lang="tr"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#f4f1ea] text-slate-900">
+      <body className="min-h-full bg-[#f6f3ee] text-slate-900">
         {children}
         <Toaster />
       </body>

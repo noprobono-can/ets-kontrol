@@ -1,9 +1,9 @@
 {
-  "name": "ets-hotel-control",
+  "name": "ets-kontrol",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0 --port 4317",
+    "dev": "next dev --hostname 0.0.0.0 --port 4521",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

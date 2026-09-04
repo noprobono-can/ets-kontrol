@@ -1,109 +1,15 @@
-import { addDays, dateRange, TODAY } from "./dates"
-import type {
-  AllotmentCell,
-  AppState,
-  Board,
-  Channel,
-  FolioItem,
-  Hotel,
-  HkTask,
-  RatePlan,
-  Reservation,
-  ReservationStatus,
-  Room,
-  RoomType,
-} from "./types"
+import { addDays, TODAY } from "./dates"
+import type { Hotel, PmsState, Reservation, Room, RoomType } from "./types"
 
 const HOTELS: Hotel[] = [
   {
-    id: "maxx-belek",
-    name: "Maxx Royal Belek",
-    city: "Belek",
-    region: "Antalya",
-    stars: 5,
-    roomCount: 470,
-    concept: "UAI",
-    kind: "Grup tesisi",
-    pms: "Opera Cloud",
-    usesEtsPms: false,
-    contractType: "Garanti",
-    integration: "Çift yönlü",
-    status: "Aktif",
-  },
-  {
-    id: "voyage-belek",
-    name: "Voyage Belek Golf & Spa",
-    city: "Belek",
-    region: "Antalya",
-    stars: 5,
-    roomCount: 687,
-    concept: "UAI",
-    kind: "Grup tesisi",
-    pms: "Elektraweb",
-    usesEtsPms: false,
-    contractType: "Garanti",
-    integration: "Çift yönlü",
-    status: "Aktif",
-  },
-  {
-    id: "caja-kemer",
-    name: "Caja by Maxx Royal",
-    city: "Kemer",
-    region: "Antalya",
-    stars: 5,
-    roomCount: 210,
-    concept: "UAI",
-    kind: "Grup tesisi",
-    pms: "Elektraweb",
-    usesEtsPms: false,
-    contractType: "Garanti",
-    integration: "Çift yönlü",
-    status: "Aktif",
-  },
-  {
-    id: "lara-palmea",
-    name: "Lara Palmea Resort",
-    city: "Lara",
-    region: "Antalya",
-    stars: 5,
-    roomCount: 412,
-    concept: "AI",
-    kind: "Kontratlı",
-    pms: "Elektraweb",
-    usesEtsPms: false,
-    contractType: "Allotment",
-    integration: "Polling",
-    status: "Aktif",
-  },
-  {
-    id: "kemer-blue",
-    name: "Kemer Blue Coast",
-    city: "Kemer",
-    region: "Antalya",
+    id: "fethiye-hill",
+    name: "Fethiye Hillside",
+    city: "Fethiye",
+    region: "Muğla",
     stars: 4,
-    roomCount: 286,
-    concept: "AI",
-    kind: "Kontratlı",
-    pms: "Sedna",
-    usesEtsPms: false,
-    contractType: "Allotment",
-    integration: "Çift yönlü",
-    status: "Aktif",
-  },
-  {
-    id: "side-starlight",
-    name: "Side Starlight",
-    city: "Side",
-    region: "Antalya",
-    stars: 5,
-    roomCount: 538,
-    concept: "UAI",
-    kind: "Kontratlı",
-    pms: "Elektraweb",
-    usesEtsPms: false,
-    contractType: "Allotment",
-    integration: "Polling",
-    status: "Stop sale",
+    phone: "0252 614 00 11",
+    newReservationsClosed: false,
   },
   {
     id: "alanya-coral",
@@ -111,89 +17,26 @@ const HOTELS: Hotel[] = [
     city: "Alanya",
     region: "Antalya",
     stars: 4,
-    roomCount: 194,
-    concept: "AI",
-    kind: "Kontratlı",
-    pms: "ETS Kontrol",
-    usesEtsPms: true,
-    contractType: "Serbest satış",
-    integration: "Yerel PMS",
-    status: "Aktif",
-  },
-  {
-    id: "bodrum-palmea",
-    name: "Bodrum Palmea",
-    city: "Bodrum",
-    region: "Muğla",
-    stars: 5,
-    roomCount: 248,
-    concept: "HB",
-    kind: "Kontratlı",
-    pms: "Opera Cloud",
-    usesEtsPms: false,
-    contractType: "Allotment",
-    integration: "Çift yönlü",
-    status: "Aktif",
-  },
-  {
-    id: "fethiye-hill",
-    name: "Fethiye Hillside",
-    city: "Fethiye",
-    region: "Muğla",
-    stars: 4,
-    roomCount: 156,
-    concept: "AI",
-    kind: "Kontratlı",
-    pms: "ETS Kontrol",
-    usesEtsPms: true,
-    contractType: "Allotment",
-    integration: "Yerel PMS",
-    status: "Aktif",
+    phone: "0242 513 44 20",
+    newReservationsClosed: false,
   },
   {
     id: "cesme-marina",
-    name: "Çeşme Marina Hotel",
+    name: "Çeşme Marina",
     city: "Çeşme",
     region: "İzmir",
-    stars: 5,
-    roomCount: 132,
-    concept: "BB",
-    kind: "Kontratlı",
-    pms: "ETS Kontrol",
-    usesEtsPms: true,
-    contractType: "Serbest satış",
-    integration: "Yerel PMS",
-    status: "Aktif",
-  },
-  {
-    id: "pera-suites",
-    name: "İstanbul Pera Suites",
-    city: "Beyoğlu",
-    region: "İstanbul",
     stars: 4,
-    roomCount: 78,
-    concept: "BB",
-    kind: "Kontratlı",
-    pms: "ETS Kontrol",
-    usesEtsPms: true,
-    contractType: "Serbest satış",
-    integration: "Yerel PMS",
-    status: "Aktif",
+    phone: "0232 712 90 40",
+    newReservationsClosed: false,
   },
   {
-    id: "capadoccia-cave",
+    id: "kapadokya-cave",
     name: "Kapadokya Cave Lodge",
     city: "Ürgüp",
     region: "Nevşehir",
-    stars: 4,
-    roomCount: 42,
-    concept: "BB",
-    kind: "Kontratlı",
-    pms: "ETS Kontrol",
-    usesEtsPms: true,
-    contractType: "Allotment",
-    integration: "Yerel PMS",
-    status: "Aktif",
+    stars: 3,
+    phone: "0384 341 22 08",
+    newReservationsClosed: false,
   },
   {
     id: "kas-mavi",
@@ -201,14 +44,8 @@ const HOTELS: Hotel[] = [
     city: "Kaş",
     region: "Antalya",
     stars: 3,
-    roomCount: 28,
-    concept: "BB",
-    kind: "Kontratlı",
-    pms: "ETS Kontrol",
-    usesEtsPms: true,
-    contractType: "Serbest satış",
-    integration: "Yerel PMS",
-    status: "Aktif",
+    phone: "0242 836 11 70",
+    newReservationsClosed: true,
   },
   {
     id: "pamukkale-thermal",
@@ -216,304 +53,342 @@ const HOTELS: Hotel[] = [
     city: "Pamukkale",
     region: "Denizli",
     stars: 4,
-    roomCount: 96,
-    concept: "HB",
-    kind: "Kontratlı",
-    pms: "ETS Kontrol",
-    usesEtsPms: true,
-    contractType: "Allotment",
-    integration: "Yerel PMS",
-    status: "Aktif",
+    phone: "0258 272 30 15",
+    newReservationsClosed: false,
+  },
+  {
+    id: "side-palmiye",
+    name: "Side Palmiye",
+    city: "Side",
+    region: "Antalya",
+    stars: 5,
+    phone: "0242 753 18 00",
+    newReservationsClosed: false,
+  },
+  {
+    id: "kusadasi-ege",
+    name: "Kuşadası Ege Suites",
+    city: "Kuşadası",
+    region: "Aydın",
+    stars: 4,
+    phone: "0256 614 55 30",
+    newReservationsClosed: false,
   },
 ]
 
-const TYPE_TEMPLATES: { code: string; name: string; capacity: number; share: number }[] = [
-  { code: "STD", name: "Standart oda", capacity: 3, share: 0.55 },
-  { code: "DLX", name: "Deluxe oda", capacity: 3, share: 0.25 },
-  { code: "FAM", name: "Aile odası", capacity: 4, share: 0.14 },
-  { code: "SUI", name: "Suit", capacity: 4, share: 0.06 },
+const ROOM_LAYOUT: { number: string; type: RoomType; floor: number }[] = [
+  { number: "101", type: "standart", floor: 1 },
+  { number: "102", type: "standart", floor: 1 },
+  { number: "103", type: "standart", floor: 1 },
+  { number: "104", type: "deniz", floor: 1 },
+  { number: "105", type: "deniz", floor: 1 },
+  { number: "106", type: "suit", floor: 1 },
+  { number: "201", type: "standart", floor: 2 },
+  { number: "202", type: "standart", floor: 2 },
+  { number: "203", type: "deniz", floor: 2 },
+  { number: "204", type: "deniz", floor: 2 },
+  { number: "205", type: "suit", floor: 2 },
+  { number: "301", type: "standart", floor: 3 },
+  { number: "302", type: "deniz", floor: 3 },
+  { number: "303", type: "deniz", floor: 3 },
+  { number: "304", type: "suit", floor: 3 },
 ]
 
-const GUESTS = [
-  "Ayşe Demir",
-  "Klaus Berger",
-  "Elif Kaya",
-  "Hans Müller",
-  "Mert Yılmaz",
-  "Sophie Laurent",
-  "Deniz Arslan",
-  "Olga Ivanova",
-  "Caner Aksoy",
-  "Emma Wilson",
-  "Zeynep Koç",
-  "Marco Rossi",
-  "Burak Şahin",
-  "Anna Schmidt",
-  "Selin Aydın",
-  "Piotr Nowak",
-  "Hakan Öztürk",
-  "Laura Becker",
-  "Cemre Uçar",
-  "Johan Eriksson",
-]
-
-const CHANNELS: Channel[] = [
-  "etstur.com",
-  "Etscore",
-  "Odamax",
-  "Çağrı merkezi",
-  "Acente B2B",
-  "Walk-in",
-]
-
-const HOUSEKEEPERS = ["Fatma Yıldız", "Emine Korkmaz", "Ayşe Çelik", "Hatice Demir"]
-
-function contractShare(hotel: Hotel) {
-  if (hotel.kind === "Grup tesisi") return 0.22
-  if (hotel.contractType === "Garanti") return 0.18
-  if (hotel.contractType === "Allotment") return 0.12
-  return 0.07
+type Stay = {
+  guestName: string
+  guestCount: number
+  nationality: string
+  inOff: number
+  outOff: number
+  roomNumber: string
+  source: Reservation["source"]
+  status: Reservation["status"]
+  note?: string
 }
 
-function buildRoomTypes(): RoomType[] {
-  return HOTELS.flatMap((hotel) => {
-    const contracted = Math.max(8, Math.round(hotel.roomCount * contractShare(hotel)))
-    let remainingPhysical = Math.min(32, Math.max(16, Math.round(hotel.roomCount * 0.06)))
-    let remainingAllot = contracted
-    return TYPE_TEMPLATES.map((tpl, index) => {
-      const last = index === TYPE_TEMPLATES.length - 1
-      const physical = last
-        ? remainingPhysical
-        : Math.max(2, Math.round(remainingPhysical * tpl.share))
-      const allotment = last
-        ? remainingAllot
-        : Math.max(1, Math.round(contracted * tpl.share))
-      remainingPhysical -= last ? 0 : physical
-      remainingAllot -= last ? 0 : allotment
-      return {
-        id: `${hotel.id}-${tpl.code.toLowerCase()}`,
-        hotelId: hotel.id,
-        code: tpl.code,
-        name: tpl.name,
-        capacity: tpl.capacity,
-        physical,
-        allotment,
-      }
-    })
-  })
+const STAYS: Record<string, Stay[]> = {
+  "fethiye-hill": [
+    {
+      guestName: "Ayşe & Kemal Demir",
+      guestCount: 2,
+      nationality: "TR",
+      inOff: -2,
+      outOff: 3,
+      roomNumber: "203",
+      source: "etstur.com",
+      status: "iceri",
+    },
+    {
+      guestName: "Lena Hoffmann",
+      guestCount: 1,
+      nationality: "DE",
+      inOff: -1,
+      outOff: 4,
+      roomNumber: "104",
+      source: "etstur.com",
+      status: "iceri",
+    },
+    {
+      guestName: "Mehmet Yıldız ailesi",
+      guestCount: 3,
+      nationality: "TR",
+      inOff: 0,
+      outOff: 5,
+      roomNumber: "205",
+      source: "etstur.com",
+      status: "bekliyor",
+    },
+    {
+      guestName: "James Whitaker",
+      guestCount: 2,
+      nationality: "GB",
+      inOff: 0,
+      outOff: 2,
+      roomNumber: "302",
+      source: "ets-merkez",
+      status: "bekliyor",
+    },
+    {
+      guestName: "Selin Arslan",
+      guestCount: 1,
+      nationality: "TR",
+      inOff: -3,
+      outOff: 0,
+      roomNumber: "102",
+      source: "resepsiyon",
+      status: "iceri",
+    },
+    {
+      guestName: "Piotr Kowalski",
+      guestCount: 2,
+      nationality: "PL",
+      inOff: 1,
+      outOff: 6,
+      roomNumber: "303",
+      source: "etstur.com",
+      status: "bekliyor",
+    },
+  ],
+  "alanya-coral": [
+    {
+      guestName: "Fatma Koç",
+      guestCount: 2,
+      nationality: "TR",
+      inOff: -1,
+      outOff: 2,
+      roomNumber: "201",
+      source: "etstur.com",
+      status: "iceri",
+    },
+    {
+      guestName: "Anna Berg",
+      guestCount: 2,
+      nationality: "SE",
+      inOff: 0,
+      outOff: 7,
+      roomNumber: "106",
+      source: "etstur.com",
+      status: "bekliyor",
+    },
+    {
+      guestName: "Hakan Özdemir",
+      guestCount: 4,
+      nationality: "TR",
+      inOff: -4,
+      outOff: 0,
+      roomNumber: "304",
+      source: "resepsiyon",
+      status: "iceri",
+    },
+  ],
+  "cesme-marina": [
+    {
+      guestName: "Ece & Can Aydın",
+      guestCount: 2,
+      nationality: "TR",
+      inOff: 0,
+      outOff: 3,
+      roomNumber: "105",
+      source: "etstur.com",
+      status: "bekliyor",
+    },
+    {
+      guestName: "Marco Rossi",
+      guestCount: 2,
+      nationality: "IT",
+      inOff: -2,
+      outOff: 1,
+      roomNumber: "204",
+      source: "etstur.com",
+      status: "iceri",
+    },
+  ],
+  "kapadokya-cave": [
+    {
+      guestName: "Claire Dubois",
+      guestCount: 2,
+      nationality: "FR",
+      inOff: -1,
+      outOff: 2,
+      roomNumber: "101",
+      source: "etstur.com",
+      status: "iceri",
+    },
+    {
+      guestName: "Burak Şahin",
+      guestCount: 2,
+      nationality: "TR",
+      inOff: 0,
+      outOff: 1,
+      roomNumber: "202",
+      source: "ets-merkez",
+      status: "bekliyor",
+    },
+  ],
+  "kas-mavi": [
+    {
+      guestName: "Nilüfer Kaya",
+      guestCount: 1,
+      nationality: "TR",
+      inOff: -3,
+      outOff: 1,
+      roomNumber: "103",
+      source: "etstur.com",
+      status: "iceri",
+      note: "Fırtına uyarısı — ETS yeni rezervasyonu durdurdu",
+    },
+  ],
+  "pamukkale-thermal": [
+    {
+      guestName: "Hans Müller",
+      guestCount: 2,
+      nationality: "DE",
+      inOff: 0,
+      outOff: 4,
+      roomNumber: "205",
+      source: "etstur.com",
+      status: "bekliyor",
+    },
+    {
+      guestName: "Zeynep Aksoy",
+      guestCount: 2,
+      nationality: "TR",
+      inOff: -2,
+      outOff: 3,
+      roomNumber: "104",
+      source: "resepsiyon",
+      status: "iceri",
+    },
+  ],
+  "side-palmiye": [
+    {
+      guestName: "Olivia Grant",
+      guestCount: 2,
+      nationality: "GB",
+      inOff: -1,
+      outOff: 6,
+      roomNumber: "304",
+      source: "etstur.com",
+      status: "iceri",
+    },
+    {
+      guestName: "Emre Çelik ailesi",
+      guestCount: 4,
+      nationality: "TR",
+      inOff: 0,
+      outOff: 7,
+      roomNumber: "106",
+      source: "ets-merkez",
+      status: "bekliyor",
+    },
+    {
+      guestName: "Sofia Nielsen",
+      guestCount: 2,
+      nationality: "DK",
+      inOff: -5,
+      outOff: 0,
+      roomNumber: "203",
+      source: "etstur.com",
+      status: "iceri",
+    },
+  ],
+  "kusadasi-ege": [
+    {
+      guestName: "Ahmet Kara",
+      guestCount: 2,
+      nationality: "TR",
+      inOff: 0,
+      outOff: 2,
+      roomNumber: "102",
+      source: "etstur.com",
+      status: "bekliyor",
+    },
+  ],
 }
 
-function buildRooms(roomTypes: RoomType[]): Room[] {
+let seq = 1000
+
+function nextId(prefix: string) {
+  seq += 1
+  return `${prefix}-${seq}`
+}
+
+function confirmation(hotelId: string, n: number) {
+  const code = hotelId.slice(0, 3).toUpperCase()
+  return `ETS-${code}-${String(24000 + n)}`
+}
+
+export function createSeedState(): PmsState {
   const rooms: Room[] = []
-  for (const type of roomTypes) {
-    const hotelTypes = roomTypes.filter((item) => item.hotelId === type.hotelId)
-    const typeIndex = hotelTypes.findIndex((item) => item.id === type.id)
-    for (let i = 0; i < type.physical; i += 1) {
-      const floor = 1 + Math.floor(i / 8) + typeIndex
-      const number = `${floor}${String(10 + (i % 8) + typeIndex * 2).padStart(2, "0")}`
-      rooms.push({
-        id: `${type.id}-${i + 1}`,
-        hotelId: type.hotelId,
-        roomTypeId: type.id,
-        number,
-        floor,
-        hkStatus: "Temiz",
-        hkAssignee: pick(HOUSEKEEPERS, i + typeIndex),
-      })
-    }
-  }
-  return rooms
-}
-
-function buildRates(roomTypes: RoomType[]): RatePlan[] {
-  const seasons = [
-    { season: "Erken rezervasyon", period: "01 Nis – 31 May", factor: 0.82 },
-    { season: "Yaz yüksek", period: "01 Haz – 15 Eyl", factor: 1 },
-    { season: "Sonbahar", period: "16 Eyl – 31 Eki", factor: 0.88 },
-  ]
-  const boards: Board[] = ["AI", "UAI", "HB", "BB"]
-  return roomTypes.flatMap((type) => {
-    const hotel = HOTELS.find((item) => item.id === type.hotelId)!
-    const base =
-      hotel.region === "Antalya"
-        ? 210
-        : hotel.region === "Muğla"
-          ? 240
-          : hotel.region === "İstanbul"
-            ? 160
-            : 145
-    const typeFactor =
-      type.code === "SUI" ? 2.1 : type.code === "FAM" ? 1.45 : type.code === "DLX" ? 1.2 : 1
-    const board = hotel.concept
-    return seasons.map((slot, index) => ({
-      id: `${type.id}-${index}`,
-      hotelId: hotel.id,
-      roomTypeId: type.id,
-      board: boards.includes(board) ? board : "AI",
-      season: slot.season,
-      period: slot.period,
-      doubleRate: Math.round(base * typeFactor * slot.factor),
-      extraAdult: Math.round(base * 0.35 * slot.factor),
-      child: Math.round(base * 0.18 * slot.factor),
-      currency: "EUR" as const,
-    }))
-  })
-}
-
-function pick<T>(list: T[], index: number) {
-  return list[index % list.length]
-}
-
-function buildReservations(roomTypes: RoomType[], rooms: Room[]): Reservation[] {
   const reservations: Reservation[] = []
-  let seq = 18420
-  HOTELS.forEach((hotel, hotelIndex) => {
-    const types = roomTypes.filter((item) => item.hotelId === hotel.id)
-    const count = hotel.kind === "Grup tesisi" ? 14 : 8
-    for (let i = 0; i < count; i += 1) {
-      const type = pick(types, i + hotelIndex)
-      const hotelRooms = rooms.filter((item) => item.roomTypeId === type.id)
-      const offset = (i * 2 + hotelIndex) % 9 - 3
-      const nights = 3 + ((i + hotelIndex) % 5)
-      const checkIn = addDays(TODAY, offset)
-      const checkOut = addDays(checkIn, nights)
-      const inHouse = checkIn <= TODAY && checkOut > TODAY
-      let status: ReservationStatus = "Konfirmeli"
-      if (inHouse && i % 4 !== 0) status = "Check-in"
-      if (checkOut <= TODAY) status = "Check-out"
-      if (i === 1 && hotelIndex % 3 === 0) status = "Opsiyon"
-      if (hotel.status === "Askıda" && i === 0) status = "İptal"
-      const assigned =
-        status === "Check-in" || status === "Check-out"
-          ? hotelRooms[i % hotelRooms.length]?.id ?? null
-          : i % 3 === 0
-            ? hotelRooms[i % hotelRooms.length]?.id ?? null
-            : null
-      seq += 1
+
+  for (const hotel of HOTELS) {
+    const hotelRooms: Room[] = ROOM_LAYOUT.map((layout) => ({
+      id: `${hotel.id}-${layout.number}`,
+      hotelId: hotel.id,
+      number: layout.number,
+      type: layout.type,
+      floor: layout.floor,
+      status: "bos",
+    }))
+
+    const stays = STAYS[hotel.id] ?? []
+    stays.forEach((stay, index) => {
+      const room = hotelRooms.find((r) => r.number === stay.roomNumber)
+      if (!room) return
+      const checkIn = addDays(TODAY, stay.inOff)
+      const checkOut = addDays(TODAY, stay.outOff)
       reservations.push({
-        id: `r-${seq}`,
+        id: nextId("rsv"),
         hotelId: hotel.id,
-        roomTypeId: type.id,
-        roomId: assigned,
-        guest: pick(GUESTS, seq),
-        pax: 2 + (i % 3),
-        board: hotel.concept,
+        confirmationNo: confirmation(hotel.id, index + 1),
+        guestName: stay.guestName,
+        guestCount: stay.guestCount,
+        nationality: stay.nationality,
         checkIn,
         checkOut,
-        status,
-        channel: pick(CHANNELS, seq + i),
-        amount: 180 * nights + i * 25,
-        currency: "EUR",
-        voucher: `ETS${seq}`,
-        note: i === 1 ? "Geç check-in talep etti" : undefined,
+        roomId: room.id,
+        roomType: room.type,
+        source: stay.source,
+        status: stay.status,
+        note: stay.note,
       })
-    }
-  })
-  return reservations
-}
-
-function buildAllotments(roomTypes: RoomType[]): AllotmentCell[] {
-  const days = dateRange(addDays(TODAY, -3), 21)
-  const cells: AllotmentCell[] = []
-  for (const type of roomTypes) {
-    const hotel = HOTELS.find((item) => item.id === type.hotelId)!
-    for (const date of days) {
-      const weekend = parseInt(date.slice(-2), 10) >= 11 && parseInt(date.slice(-2), 10) <= 13
-      const stopSale =
-        hotel.status === "Stop sale" ||
-        (hotel.id === "side-starlight" && weekend) ||
-        (hotel.id === "bodrum-palmea" && date === "2026-09-12")
-      cells.push({
-        hotelId: hotel.id,
-        roomTypeId: type.id,
-        date,
-        allotted: type.allotment,
-        stopSale,
-      })
-    }
-  }
-  return cells
-}
-
-export function createSeedState(): AppState {
-  const roomTypes = buildRoomTypes()
-  const rooms = buildRooms(roomTypes)
-  const reservations = buildReservations(roomTypes, rooms)
-  const occupiedIds = new Set(
-    reservations
-      .filter((item) => item.status === "Check-in" && item.roomId)
-      .map((item) => item.roomId as string)
-  )
-  const departedIds = new Set(
-    reservations
-      .filter((item) => item.status === "Check-out" && item.roomId)
-      .map((item) => item.roomId as string)
-  )
-  const roomsWithHk = rooms.map((room, index) => {
-    if (index % 17 === 0) {
-      return { ...room, hkStatus: "Arızalı" as const, hkNote: "Klima arızası" }
-    }
-    if (departedIds.has(room.id) || index % 5 === 0) {
-      return { ...room, hkStatus: "Kirli" as const }
-    }
-    if (occupiedIds.has(room.id) && index % 7 === 0) {
-      return { ...room, hkStatus: "Kirli" as const, hkNote: "Stayover" }
-    }
-    if (index % 11 === 0) {
-      return { ...room, hkStatus: "Kontrol" as const }
-    }
-    return room
-  })
-  const hkTasks: HkTask[] = roomsWithHk
-    .filter((room) => room.hkStatus === "Kirli" || room.hkStatus === "Arızalı")
-    .map((room, index) => ({
-      id: `hk-${room.id}`,
-      hotelId: room.hotelId,
-      roomId: room.id,
-      type:
-        room.hkStatus === "Arızalı"
-          ? "Arıza"
-          : departedIds.has(room.id)
-            ? "Çıkış temizliği"
-            : "Stayover",
-      status: index % 4 === 0 ? "Devam" : "Açık",
-      assignee: room.hkAssignee ?? pick(HOUSEKEEPERS, index),
-      due: TODAY,
-    }))
-  const folio: FolioItem[] = reservations
-    .filter((item) => item.status === "Check-in")
-    .flatMap((item, index) => {
-      const extras =
-        index % 2 === 0
-          ? [
-              {
-                id: `f-${item.id}-1`,
-                reservationId: item.id,
-                department: "Minibar" as const,
-                description: "Minibar",
-                amount: 18,
-              },
-            ]
-          : []
-      return [
-        {
-          id: `f-${item.id}-oda`,
-          reservationId: item.id,
-          department: "Oda" as const,
-          description: "Konaklama",
-          amount: item.amount,
-        },
-        ...extras,
-      ]
+      if (stay.status === "iceri") {
+        room.status = "dolu"
+      }
     })
-  return {
-    hotels: HOTELS,
-    roomTypes,
-    rooms: roomsWithHk,
-    reservations,
-    allotments: buildAllotments(roomTypes),
-    rates: buildRates(roomTypes),
-    hkTasks,
-    folio,
+
+    if (hotel.id === "fethiye-hill") {
+      const dirty = hotelRooms.find((r) => r.number === "101")
+      const ooo = hotelRooms.find((r) => r.number === "301")
+      if (dirty) dirty.status = "kirli"
+      if (ooo) ooo.status = "arizali"
+    }
+
+    rooms.push(...hotelRooms)
   }
+
+  return { hotels: HOTELS, rooms, reservations }
 }
+
+export const DEFAULT_HOTEL_ID = "fethiye-hill"

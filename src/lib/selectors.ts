@@ -1,156 +1,48 @@
-import type { AppState, FolioItem, HkTask, Reservation, Room } from "./types"
-import { staysOn, TODAY } from "./dates"
+import { TODAY } from "./dates"
+import type { Hotel, Reservation, Room } from "./types"
 
-const HOLDING: Reservation["status"][] = ["Opsiyon", "Konfirmeli", "Check-in"]
-
-export function hotelOf(state: AppState, hotelId: string) {
-  return state.hotels.find((item) => item.id === hotelId)
+export function occupancy(rooms: Room[]) {
+  const sellable = rooms.filter((r) => r.status !== "arizali")
+  const occupied = rooms.filter((r) => r.status === "dolu").length
+  const pct = sellable.length === 0 ? 0 : Math.round((occupied / sellable.length) * 100)
+  return { occupied, sellable: sellable.length, total: rooms.length, pct }
 }
 
-export function roomTypesOf(state: AppState, hotelId: string) {
-  return state.roomTypes.filter((item) => item.hotelId === hotelId)
-}
-
-export function roomsOf(state: AppState, hotelId: string) {
-  return state.rooms.filter((item) => item.hotelId === hotelId)
-}
-
-export function reservationsOf(state: AppState, hotelId?: string) {
-  return hotelId
-    ? state.reservations.filter((item) => item.hotelId === hotelId)
-    : state.reservations
-}
-
-export function roomTypeById(state: AppState, id: string) {
-  return state.roomTypes.find((item) => item.id === id)
-}
-
-export function roomById(state: AppState, id: string | null) {
-  if (!id) return undefined
-  return state.rooms.find((item) => item.id === id)
-}
-
-export function activeReservations(items: Reservation[]) {
-  return items.filter((item) => HOLDING.includes(item.status))
-}
-
-export function occupiedRoomIds(state: AppState, hotelId: string, date = TODAY) {
-  return new Set(
-    inHouseOn(state, date, hotelId)
-      .map((item) => item.roomId)
-      .filter((id): id is string => Boolean(id))
+export function arrivalsToday(reservations: Reservation[]) {
+  return reservations.filter(
+    (r) => r.checkIn === TODAY && (r.status === "bekliyor" || r.status === "iceri")
   )
 }
 
-export function soldOn(
-  state: AppState,
-  hotelId: string,
-  roomTypeId: string,
-  date: string
+export function departuresToday(reservations: Reservation[]) {
+  return reservations.filter(
+    (r) => r.checkOut === TODAY && (r.status === "iceri" || r.status === "cikti")
+  )
+}
+
+export function inHouse(reservations: Reservation[]) {
+  return reservations.filter((r) => r.status === "iceri")
+}
+
+export function pendingArrivals(reservations: Reservation[]) {
+  return reservations.filter((r) => r.checkIn === TODAY && r.status === "bekliyor")
+}
+
+export function hotelSummary(
+  hotel: Hotel,
+  rooms: Room[],
+  reservations: Reservation[]
 ) {
-  return activeReservations(state.reservations).filter(
-    (item) =>
-      item.hotelId === hotelId &&
-      item.roomTypeId === roomTypeId &&
-      staysOn(item.checkIn, item.checkOut, date)
-  ).length
-}
-
-export function allotmentCell(
-  state: AppState,
-  hotelId: string,
-  roomTypeId: string,
-  date: string
-) {
-  return state.allotments.find(
-    (item) =>
-      item.hotelId === hotelId &&
-      item.roomTypeId === roomTypeId &&
-      item.date === date
-  )
-}
-
-export function hotelAllotmentFill(state: AppState, hotelId: string, date: string) {
-  const types = roomTypesOf(state, hotelId)
-  let allotted = 0
-  let sold = 0
-  for (const type of types) {
-    const cell = allotmentCell(state, hotelId, type.id, date)
-    allotted += cell?.allotted ?? type.allotment
-    sold += soldOn(state, hotelId, type.id, date)
-  }
-  return { allotted, sold, fill: allotted === 0 ? 0 : sold / allotted }
-}
-
-export function hotelOccupancy(state: AppState, hotelId: string, date: string) {
-  const rooms = roomsOf(state, hotelId)
-  const occupied = rooms.filter((room) =>
-    activeReservations(state.reservations).some(
-      (item) => item.roomId === room.id && staysOn(item.checkIn, item.checkOut, date)
-    )
-  ).length
-  return rooms.length === 0 ? 0 : occupied / rooms.length
-}
-
-export function arrivalsOn(state: AppState, date: string, hotelId?: string) {
-  return reservationsOf(state, hotelId).filter(
-    (item) => item.checkIn === date && HOLDING.includes(item.status)
-  )
-}
-
-export function inHouseOn(state: AppState, date: string, hotelId?: string) {
-  return activeReservations(reservationsOf(state, hotelId)).filter((item) =>
-    staysOn(item.checkIn, item.checkOut, date)
-  )
-}
-
-export function departuresOn(state: AppState, date: string, hotelId?: string) {
-  return reservationsOf(state, hotelId).filter(
-    (item) => item.checkOut === date && item.status !== "İptal"
-  )
-}
-
-export function stopSaleCount(state: AppState, date: string, hotelId?: string) {
-  return state.allotments.filter(
-    (item) =>
-      item.date === date &&
-      item.stopSale &&
-      (!hotelId || item.hotelId === hotelId)
-  ).length
-}
-
-export function hkSummary(rooms: Room[]) {
+  const hotelRooms = rooms.filter((r) => r.hotelId === hotel.id)
+  const hotelRes = reservations.filter((r) => r.hotelId === hotel.id)
+  const occ = occupancy(hotelRooms)
   return {
-    dirty: rooms.filter((item) => item.hkStatus === "Kirli").length,
-    clean: rooms.filter((item) => item.hkStatus === "Temiz").length,
-    inspect: rooms.filter((item) => item.hkStatus === "Kontrol").length,
-    ooo: rooms.filter((item) => item.hkStatus === "Arızalı").length,
+    hotel,
+    ...occ,
+    arrivals: pendingArrivals(hotelRes).length,
+    departures: hotelRes.filter((r) => r.checkOut === TODAY && r.status === "iceri")
+      .length,
+    inHouse: inHouse(hotelRes).length,
+    dirty: hotelRooms.filter((r) => r.status === "kirli").length,
   }
-}
-
-export function tasksOf(state: AppState, hotelId: string) {
-  return state.hkTasks.filter((item) => item.hotelId === hotelId)
-}
-
-export function folioOf(state: AppState, reservationId: string): FolioItem[] {
-  return state.folio.filter((item) => item.reservationId === reservationId)
-}
-
-export function folioTotal(state: AppState, reservationId: string) {
-  return folioOf(state, reservationId).reduce((acc, item) => acc + item.amount, 0)
-}
-
-export function nextVoucher(state: AppState) {
-  const max = state.reservations.reduce((acc, item) => {
-    const num = Number(item.voucher.replace("ETS", ""))
-    return Number.isFinite(num) ? Math.max(acc, num) : acc
-  }, 20000)
-  return `ETS${max + 1}`
-}
-
-export function openHkTasks(state: AppState, hotelId?: string): HkTask[] {
-  return state.hkTasks.filter(
-    (item) =>
-      item.status !== "Tamam" && (!hotelId || item.hotelId === hotelId)
-  )
 }

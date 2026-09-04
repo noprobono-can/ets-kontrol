@@ -1,142 +1,60 @@
-export type Board = "UAI" | "AI" | "HB" | "BB" | "RO"
-export type ContractType = "Garanti" | "Allotment" | "Serbest satış"
-export type PmsKind =
-  | "ETS Kontrol"
-  | "Elektraweb"
-  | "Opera Cloud"
-  | "Sedna"
-  | "HotelRunner"
-  | "Yok"
-export type Integration = "Çift yönlü" | "Polling" | "Manuel" | "Yerel PMS"
-export type HotelKind = "Grup tesisi" | "Kontratlı"
+export type Role = "otel" | "merkez"
+
+export type RoomType = "standart" | "deniz" | "suit"
+
+export type RoomStatus = "bos" | "dolu" | "kirli" | "arizali"
+
 export type ReservationStatus =
-  | "Opsiyon"
-  | "Konfirmeli"
-  | "Check-in"
-  | "Check-out"
-  | "İptal"
-  | "No-show"
-export type Channel =
-  | "etstur.com"
-  | "Etscore"
-  | "Odamax"
-  | "Çağrı merkezi"
-  | "Acente B2B"
-  | "Walk-in"
-export type HousekeepingStatus = "Temiz" | "Kirli" | "Kontrol" | "Arızalı"
-export type HkTaskType = "Çıkış temizliği" | "Stayover" | "VIP setup" | "Arıza"
-export type HkTaskStatus = "Açık" | "Devam" | "Tamam"
-export type FolioDepartment = "Oda" | "Minibar" | "Çamaşır" | "Restoran" | "Diğer"
+  | "bekliyor"
+  | "iceri"
+  | "cikti"
+  | "iptal"
+  | "no-show"
+
+export type BookingSource = "etstur.com" | "resepsiyon" | "ets-merkez"
 
 export type Hotel = {
   id: string
   name: string
   city: string
   region: string
-  stars: number
-  roomCount: number
-  concept: Board
-  kind: HotelKind
-  pms: PmsKind
-  usesEtsPms: boolean
-  contractType: ContractType
-  integration: Integration
-  status: "Aktif" | "Stop sale" | "Askıda"
-}
-
-export type RoomType = {
-  id: string
-  hotelId: string
-  code: string
-  name: string
-  capacity: number
-  physical: number
-  allotment: number
+  stars: 3 | 4 | 5
+  phone: string
+  newReservationsClosed: boolean
 }
 
 export type Room = {
   id: string
   hotelId: string
-  roomTypeId: string
   number: string
+  type: RoomType
   floor: number
-  hkStatus: HousekeepingStatus
-  hkAssignee: string | null
-  hkNote?: string
+  status: RoomStatus
 }
 
 export type Reservation = {
   id: string
   hotelId: string
-  roomTypeId: string
-  roomId: string | null
-  guest: string
-  pax: number
-  board: Board
+  confirmationNo: string
+  guestName: string
+  guestCount: number
+  nationality: string
   checkIn: string
   checkOut: string
+  roomId: string | null
+  roomType: RoomType
+  source: BookingSource
   status: ReservationStatus
-  channel: Channel
-  amount: number
-  currency: "EUR"
-  voucher: string
   note?: string
 }
 
-export type AllotmentCell = {
-  hotelId: string
-  roomTypeId: string
-  date: string
-  allotted: number
-  stopSale: boolean
-}
-
-export type RatePlan = {
-  id: string
-  hotelId: string
-  roomTypeId: string
-  board: Board
-  season: string
-  period: string
-  doubleRate: number
-  extraAdult: number
-  child: number
-  currency: "EUR"
-}
-
-export type HkTask = {
-  id: string
-  hotelId: string
-  roomId: string
-  type: HkTaskType
-  status: HkTaskStatus
-  assignee: string
-  due: string
-}
-
-export type FolioItem = {
-  id: string
-  reservationId: string
-  department: FolioDepartment
-  description: string
-  amount: number
-}
-
-export type AppState = {
+export type PmsState = {
   hotels: Hotel[]
-  roomTypes: RoomType[]
   rooms: Room[]
   reservations: Reservation[]
-  allotments: AllotmentCell[]
-  rates: RatePlan[]
-  hkTasks: HkTask[]
-  folio: FolioItem[]
 }
 
-export type Role = "merkez" | "otel"
 export type ViewState = {
   role: Role
   hotelId: string
 }
-
-export type ActionResult = { ok: true } | { ok: false; reason: string }
