@@ -4,7 +4,9 @@ Yalnızca **ETSTUR otelleri** için otel PMS’i. Resepsiyon odaları, rezervasy
 
 Bu bir kontenjan / tur operatörü kontrol paneli değildir. Maxx Royal veya Voyage gibi kendi PMS’i olan gruplar kapsam dışıdır.
 
-Canonical repo: [github.com/noprobono-can/ets-kontrol](https://github.com/noprobono-can/ets-kontrol)
+Canlı site (GitHub Pages): [noprobono-can.github.io/ets-kontrol](https://noprobono-can.github.io/ets-kontrol/)
+
+Kaynak: [github.com/noprobono-can/ets-kontrol](https://github.com/noprobono-can/ets-kontrol)
 
 ## Demo
 
